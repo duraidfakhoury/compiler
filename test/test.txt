@@ -1,0 +1,24 @@
+import { angular, component } from "@angular/core"
+
+@component({
+    selector: "path",
+    template: `<div>hello world</div>`
+})
+
+let products: Product[] = [
+    {
+        name: "product1",
+        price: 10
+    },
+    {
+        name: "product2",
+        price: 2
+    }
+]
+
+products.map(product => `
+    <div className="name">
+        <h1> {{ product.name }} </h1>
+        <myComponent />
+    </div>
+`)
