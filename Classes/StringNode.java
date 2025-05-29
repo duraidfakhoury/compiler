@@ -1,0 +1,18 @@
+package Classes;
+
+public class StringNode extends PrimaryValueNode {
+    private final String value;
+
+    public StringNode(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return "\nStringNode{\"" + value + "\"}";
+    }
+}

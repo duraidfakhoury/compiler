@@ -1,4 +1,4 @@
-// Generated from /home/m16/IdeaProjects/compilerV3/MyLexer.g4 by ANTLR 4.13.2
+// Generated from C:/Users/durai/Downloads/Telegram Desktop/compilerV4/compilerV4/MyLexer.g4 by ANTLR 4.13.2
 package gen;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;

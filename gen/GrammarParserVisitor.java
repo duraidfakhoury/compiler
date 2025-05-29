@@ -1,4 +1,4 @@
-// Generated from /home/m16/Desktop/compilerV4/GrammarParser.g4 by ANTLR 4.13.2
+// Generated from C:/Users/durai/Downloads/Telegram Desktop/compilerV4/compilerV4/GrammarParser.g4 by ANTLR 4.13.2
 package gen;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -83,6 +83,24 @@ public interface GrammarParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitImportStatement(GrammarParser.ImportStatementContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link GrammarParser#defaultImport}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDefaultImport(GrammarParser.DefaultImportContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GrammarParser#namedImports}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNamedImports(GrammarParser.NamedImportsContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GrammarParser#importSpecifier}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitImportSpecifier(GrammarParser.ImportSpecifierContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link GrammarParser#exportStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -94,6 +112,18 @@ public interface GrammarParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitClassDeclaration(GrammarParser.ClassDeclarationContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GrammarParser#classBody}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitClassBody(GrammarParser.ClassBodyContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GrammarParser#classBodyStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitClassBodyStatement(GrammarParser.ClassBodyStatementContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link GrammarParser#componentStatement}.
 	 * @param ctx the parse tree
@@ -124,6 +154,12 @@ public interface GrammarParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitPrimaryValue(GrammarParser.PrimaryValueContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GrammarParser#binaryOp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBinaryOp(GrammarParser.BinaryOpContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link GrammarParser#operatorExpression}.
 	 * @param ctx the parse tree

@@ -1,30 +1,30 @@
 package Classes;
 
 public class VariableDeclarationNode extends ASTNode {
-    private final String declarationType; // CONST, LET, VAR
-    private final String variableName;
-    private final String type; // Optional type definition
-    private final ASTNode value; // Assigned value (optional)
+    private String Kind ;
+    private VariableAssignNode assignment ;
 
-    public VariableDeclarationNode(String declarationType, String variableName, String type, ASTNode value) {
-        super("VariableDeclarationNode");
-        this.declarationType = declarationType;
-        this.variableName = variableName;
-        this.type = type;
-        this.value = value;
+    public VariableDeclarationNode(String kind) {
+        Kind = kind;
     }
 
-    // Setter methods
+    public VariableAssignNode getAssignment() {
+        return assignment;
+    }
 
+    public void setAssignment(VariableAssignNode assignment) {
+        this.assignment = assignment;
+    }
+
+    public String getKind() {
+        return Kind;
+    }
 
     @Override
     public String toString() {
-        return "VariableDeclarationNode{" +
-                "declarationType='" + declarationType + '\'' +
-                ", variableName='" + variableName + '\'' +
-                ", type='" + type + '\'' +
-                ", value=" + (value != null ? value.toString() : "null") +
-                '}';
-
+        return "\nVariableDeclarationNode{" +
+                "Kind='" + Kind + '\'' +
+                ", assignment=" + assignment +
+                "}";
     }
 }

@@ -1,35 +1,19 @@
 package Classes;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-class FunctionCallNode extends ASTNode {
-    public String functionName;
-    public List<ASTNode> arguments = new ArrayList<>();
-
-    // Default constructor
-    public FunctionCallNode() {
-        super("FunctionCallNode");
-    }
-
-    // Constructor with position metadata
-    public FunctionCallNode(String functionName, List<ASTNode> arguments) {
-        super("FunctionCallNode");
-        this.functionName = functionName;
-        this.arguments = arguments;
-    }
+public class FunctionCallNode extends PrimaryValueNode {
+    private String functionName;
+    private List<ValueNode> arguments = new ArrayList<>();
+    public FunctionCallNode(String name) { this.functionName = name; }
+    public void addArgument(ValueNode arg) { arguments.add(arg); }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("FunctionCallNode{functionName=").append(functionName);
-        if (!arguments.isEmpty()) {
-            sb.append(", arguments=");
-            for (ASTNode arg : arguments) {
-                sb.append(arg).append(", ");
-            }
-            sb.setLength(sb.length() - 2);  // Remove last comma
-        }
-        sb.append("}");
-        return sb.toString();
+        return "\nFunctionCallNode{" +
+                "functionName='" + functionName + '\'' +
+                ", arguments=" + arguments +
+                '}';
     }
 }

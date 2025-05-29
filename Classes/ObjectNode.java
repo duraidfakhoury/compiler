@@ -1,38 +1,47 @@
 package Classes;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ObjectNode extends ASTNode {
-    public List<PropertyNode> properties;  // List of properties as key-value pairs
+public class ObjectNode extends PrimaryValueNode {
+    private final List<PropertyNode> properties = new ArrayList<>();
 
-    public ObjectNode() {
-        super("ObjectNode");
-        this.properties = new ArrayList<>();
+    public void addProperty(PropertyNode property) {
+        properties.add(property);
+    }
+
+    public List<PropertyNode> getProperties() {
+        return properties;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(type + " [properties=");
-        for (PropertyNode property : properties) {
-            sb.append(property.toString()).append(", ");
-        }
-        sb.setLength(sb.length() - 2);  // Remove last comma and space
-        sb.append("]");
-        return sb.toString();
+        return "\nObjectNode{" + properties + "}";
     }
 }
 
-class PropertyNode {
-    public String key;     // The key of the property
-    public ASTNode value;  // The value of the property (can be any ASTNode)
+class PropertyNode extends ASTNode {
+    private final String key;
+    private final ValueNode value;
 
-    public PropertyNode(String key, ASTNode value) {
+    public PropertyNode(String key, ValueNode value) {
         this.key = key;
         this.value = value;
     }
 
+    public String getKey() {
+        return key;
+    }
+
+    public ValueNode getValue() {
+        return value;
+    }
+
     @Override
     public String toString() {
-        return "PropertyNode{key=" + key + ", value=" + value + "}";
+        return "\nPropertyNode{" +
+                "key='" + key + '\'' +
+                ", value=" + value +
+                "}";
     }
 }

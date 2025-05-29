@@ -1,9 +1,19 @@
-import { angular, component } from "@angular/core"
+import { Component1, Component2 } from "library"
 
 @component({
     selector: "path",
     template: `<div>hello world</div>`
 })
+
+export class MyClass {
+    const x = 5
+    function sayHello() {
+    if(x == 5){
+        return "hello"}
+    else{
+        return "buy"}
+    }
+}
 
 let products: Product[] = [
     {
@@ -15,10 +25,3 @@ let products: Product[] = [
         price: 2
     }
 ]
-
-products.map(product => `
-    <div className="name">
-        <h1> {{ product.name }} </h1>
-        <myComponent />
-    </div>
-`)

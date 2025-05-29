@@ -10,7 +10,6 @@ statement
         functionDeclaration
         | functionCall
         | variableDeclaration
-
         | variableAssign
         | value
         | html
@@ -69,7 +68,19 @@ variableAssign
     : ID typeDefine? (ASSIGN value)? ;
 
 importStatement
-    : IMPORT (ID|( (LBRACE|LBRACE_HTML) (ID (COMMA ID)*) (RBRACE|RBRACE_HTML) )) FROM STRING
+    : IMPORT (defaultImport | namedImports) FROM STRING
+    ;
+
+defaultImport
+    : ID
+    ;
+
+namedImports
+    : (LBRACE | LBRACE_HTML ) importSpecifier (COMMA importSpecifier)* (RBRACE | RBRACE_HTML )
+    ;
+
+importSpecifier
+    : ID (AS ID)?
     ;
 
 exportStatement
@@ -77,9 +88,14 @@ exportStatement
     ;
 
 classDeclaration
-    : CLASS ID (LBRACE) (statement)* (RBRACE)
+    : CLASS ID classBody
     ;
+classBody : (LBRACE) classBodyStatement* (RBRACE) ;
 
+classBodyStatement
+    : variableDeclaration
+    | functionDeclaration
+    ;
 
 componentStatement
     : COMPONENT LPAREN LBRACE (SELECTOR COLON STRING COMMA)?
@@ -96,7 +112,8 @@ asType
     ;
 
 value
-    : primaryValue (QMARK|EMARK)? operatorExpression? asType?
+    : value binaryOp value
+    | primaryValue (QMARK|EMARK)? asType?
     ;
 
 primaryValue
@@ -113,7 +130,16 @@ primaryValue
     | decrease_variable
     | (BACKTICK|BACKTICK_HTML) html* (BACKTICK|BACKTICK_HTML)
     ;
-
+binaryOp
+    : DOUBLE_ASSIGN
+    | DOUBLE_ASSIGN_ID
+    | NOT_EQUAL
+    | OR
+    | AND
+    | DOUBLE_QMARK
+    | (RTAG (ASSIGN|DOUBLE_ASSIGN)?)
+    | ((LTAG|LTAG_HTML) (ASSIGN|DOUBLE_ASSIGN)?)
+    ;
 operatorExpression
     : DOT value
     | comparison

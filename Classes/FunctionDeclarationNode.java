@@ -1,39 +1,24 @@
 package Classes;
 
-import java.util.*;
+import java.util.List;
 
-class FunctionDeclarationNode extends ASTNode {
-    public String functionName;
-    public List<String> parameters = new ArrayList<>();
-    public ASTNode body;
-    public String returnType;  // Optional: If your language has return types
+public class FunctionDeclarationNode extends ASTNode {
+    private String name;
+    private List<String> parameters;
+    private FunctionBodyNode body;
 
-    // Default constructor
-    public FunctionDeclarationNode() {
-        super("FunctionDeclarationNode");
-    }
-
-    // Constructor with parameters and return type
-    public FunctionDeclarationNode(String functionName, List<String> parameters, ASTNode body, String returnType) {
-        super("FunctionDeclarationNode");
-        this.functionName = functionName;
-        this.parameters = parameters;
+    public FunctionDeclarationNode(String name, List<String> params, FunctionBodyNode body) {
+        this.name = name;
+        this.parameters = params;
         this.body = body;
-        this.returnType = returnType;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("FunctionDeclarationNode{functionName=").append(functionName);
-        if (!parameters.isEmpty()) {
-            sb.append(", parameters=").append(parameters);
-        }
-        if (returnType != null && !returnType.isEmpty()) {
-            sb.append(", returnType=").append(returnType);
-        }
-        sb.append(", body=").append(body);
-        sb.append("}");
-        return sb.toString();
+        return "\nFunctionDeclarationNode{" +
+                "name='" + name + '\'' +
+                ", parameters=" + parameters +
+                ", body=" + body +
+                '}';
     }
 }

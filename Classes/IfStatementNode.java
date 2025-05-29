@@ -1,26 +1,28 @@
 package Classes;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class IfStatementNode extends ASTNode {
-    public ASTNode condition;  // The condition for the if or else-if
-    public ProgramNode thenBranch;  // The "then" branch
-    public List<ASTNode> elseIfBranches;  // A list to handle multiple "else if" branches
-    public ASTNode elseBranch;  // The "else" branch (can be another IfStatementNode or a ProgramNode)
+    private List<IfBodyNode> conditions = new ArrayList<>();
+    private List<ASTNode> elseBlock;
 
-    // Constructor
-    public IfStatementNode() {
-        super("IfStatementNode");
-        this.elseIfBranches = new ArrayList<>();
+    public void addCondition(IfBodyNode body) { conditions.add(body); }
+    public void setElseBlock(List<ASTNode> elseBlock) { this.elseBlock = elseBlock; }
+
+    public List<IfBodyNode> getConditions() {
+        return conditions;
+    }
+
+    public List<ASTNode> getElseBlock() {
+        return elseBlock;
     }
 
     @Override
     public String toString() {
-        return "IfStatementNode{" +
-                "condition=" + condition +
-                ", thenBranch=" + thenBranch +
-                ", elseIfBranches=" + elseIfBranches +
-                ", elseBranch=" + elseBranch +
+        return "\nIfStatementNode{" +
+                "conditions=" + conditions +
+                ", elseBlock=" + elseBlock +
                 '}';
     }
 }

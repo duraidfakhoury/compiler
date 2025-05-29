@@ -1,4 +1,4 @@
-// Generated from /home/m16/Desktop/compilerV4/GrammarParser.g4 by ANTLR 4.13.2
+// Generated from C:/Users/durai/Downloads/Telegram Desktop/compilerV4/compilerV4/GrammarParser.g4 by ANTLR 4.13.2
 package gen;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -128,6 +128,36 @@ public interface GrammarParserListener extends ParseTreeListener {
 	 */
 	void exitImportStatement(GrammarParser.ImportStatementContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link GrammarParser#defaultImport}.
+	 * @param ctx the parse tree
+	 */
+	void enterDefaultImport(GrammarParser.DefaultImportContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GrammarParser#defaultImport}.
+	 * @param ctx the parse tree
+	 */
+	void exitDefaultImport(GrammarParser.DefaultImportContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GrammarParser#namedImports}.
+	 * @param ctx the parse tree
+	 */
+	void enterNamedImports(GrammarParser.NamedImportsContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GrammarParser#namedImports}.
+	 * @param ctx the parse tree
+	 */
+	void exitNamedImports(GrammarParser.NamedImportsContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GrammarParser#importSpecifier}.
+	 * @param ctx the parse tree
+	 */
+	void enterImportSpecifier(GrammarParser.ImportSpecifierContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GrammarParser#importSpecifier}.
+	 * @param ctx the parse tree
+	 */
+	void exitImportSpecifier(GrammarParser.ImportSpecifierContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link GrammarParser#exportStatement}.
 	 * @param ctx the parse tree
 	 */
@@ -147,6 +177,26 @@ public interface GrammarParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitClassDeclaration(GrammarParser.ClassDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GrammarParser#classBody}.
+	 * @param ctx the parse tree
+	 */
+	void enterClassBody(GrammarParser.ClassBodyContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GrammarParser#classBody}.
+	 * @param ctx the parse tree
+	 */
+	void exitClassBody(GrammarParser.ClassBodyContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GrammarParser#classBodyStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterClassBodyStatement(GrammarParser.ClassBodyStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GrammarParser#classBodyStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitClassBodyStatement(GrammarParser.ClassBodyStatementContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link GrammarParser#componentStatement}.
 	 * @param ctx the parse tree
@@ -197,6 +247,16 @@ public interface GrammarParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitPrimaryValue(GrammarParser.PrimaryValueContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GrammarParser#binaryOp}.
+	 * @param ctx the parse tree
+	 */
+	void enterBinaryOp(GrammarParser.BinaryOpContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GrammarParser#binaryOp}.
+	 * @param ctx the parse tree
+	 */
+	void exitBinaryOp(GrammarParser.BinaryOpContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link GrammarParser#operatorExpression}.
 	 * @param ctx the parse tree

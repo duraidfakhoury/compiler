@@ -1,34 +1,21 @@
 package Classes;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ArrayNode extends ASTNode {
-    private List<ASTNode> elements = new ArrayList<>();
+public class ArrayNode extends PrimaryValueNode {
+    private final List<ValueNode> elements = new ArrayList<>();
 
-    public ArrayNode() {
-        super("Array");
-    }
-
-    public void addElement(ASTNode element) {
+    public void addElement(ValueNode element) {
         elements.add(element);
     }
 
-    public List<ASTNode> getElements() {
+    public List<ValueNode> getElements() {
         return elements;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Array: [\n");
-        for (ASTNode element : elements) {
-            sb.append(element.toString()).append(", ");
-        }
-        if (!elements.isEmpty()) {
-            sb.setLength(sb.length() - 2); // Remove the trailing comma and space
-        }
-        sb.append("]");
-        return sb.toString();
+        return "\nArrayNode{" + elements + "}";
     }
 }
-
