@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
+    SymbolTable symbolTable = new SymbolTable();
+
     @Override
     public ASTNode visitProgram(GrammarParser.ProgramContext ctx) {
         ProgramNode programNode = new ProgramNode();
@@ -24,6 +26,7 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         VariableDeclarationNode variableDeclarationNode = new VariableDeclarationNode(kind);
         VariableAssignNode assignNode = (VariableAssignNode) visit(ctx.variableAssign());
         variableDeclarationNode.setAssignment(assignNode);
+
         return variableDeclarationNode;
     }
 
@@ -37,6 +40,7 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         if (ctx.value() != null) {
             variableAssignNode.setValue((ValueNode) visit(ctx.value()));
         }
+
         return variableAssignNode;
     }
 
@@ -279,4 +283,59 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         return componentNode;
     }
 
+    public ASTNode visitHtml(GrammarParser.HtmlContext ctx) {
+        if (ctx.open_tag() != null && ctx.close_tag() != null) {
+            // Full tag with children
+            HtmlNode node = new HtmlNode(HtmlNode.HtmlType.ELEMENT);
+            node.setTagName(ctx.open_tag().ID().getText());
+
+            if (ctx.open_tag().attribute() != null) {
+                for (GrammarParser.AttributeContext attrCtx : ctx.open_tag().attribute()) {
+                    node.addAttribute(attrCtx.ID().getText(), stripQuotes(attrCtx.STRING().getText()));
+                }
+            }
+
+            for (GrammarParser.HtmlContext child : ctx.html()) {
+                HtmlNode childNode = (HtmlNode) visitHtml(child);
+                node.addChild(childNode);
+            }
+
+            return node;
+
+        } else if (ctx.single_tag() != null) {
+            // Self-closing tag
+            HtmlNode node = new HtmlNode(HtmlNode.HtmlType.SELF_CLOSING);
+            node.setTagName(ctx.single_tag().ID().getText());
+
+            if (ctx.single_tag().attribute() != null) {
+                for (GrammarParser.AttributeContext attrCtx : ctx.single_tag().attribute()) {
+                    node.addAttribute(attrCtx.ID().getText(), stripQuotes(attrCtx.STRING().getText()));
+                }
+            }
+
+            return node;
+
+        } else if (ctx.TEXT_HTML() != null) {
+            // Plain text node
+            HtmlNode node = new HtmlNode(HtmlNode.HtmlType.TEXT);
+            node.setTextContent(ctx.TEXT_HTML().getText());
+            return node;
+
+        } else if (ctx.getStart().getType() == gen.MyLexer.LBRACE_HTML || ctx.getStart().getType() == gen.MyLexer.LBRACE) {
+            // embedded {{ ... }} or { ... }
+            HtmlNode node = new HtmlNode(HtmlNode.HtmlType.EMBEDDED_STATEMENTS);
+            for (GrammarParser.StatementContext stmt : ctx.statement()) {
+                node.addEmbeddedStatement(visit(stmt));
+            }
+            return node;
+        }
+
+        return null;
+    }
+
+    // Helper to remove quotes from STRING token
+    private String stripQuotes(String s) {
+        if (s == null || s.length() < 2) return s;
+        return s.substring(1, s.length() - 1);
+    }
 }
