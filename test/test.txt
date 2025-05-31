@@ -7,15 +7,22 @@ import { Component1, Component2 } from "library"
 
 export class MyClass {
     const x = 5
+    let products: string = ''
     function sayHello() {
     if(x == 5){
         return "hello"}
     else{
         return "buy"}
+    return products
     }
 }
 
-let products: Product[] = [
+    let products: string = ''
+    let test: string = ''
+
+products == test
+
+products: Product[] = [
     {
         name: "product1",
         price: 10

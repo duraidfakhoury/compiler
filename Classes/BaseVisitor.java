@@ -3,12 +3,20 @@ package Classes;
 import gen.GrammarParser;
 import gen.GrammarParserBaseVisitor;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.Token;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
     SymbolTable symbolTable = new SymbolTable();
+    private boolean inFunction = false;
+    private String currentFunctionName = null;
+
+    // Getter for symbol table
+    public SymbolTable getSymbolTable() {
+        return symbolTable;
+    }
 
     @Override
     public ASTNode visitProgram(GrammarParser.ProgramContext ctx) {
@@ -17,6 +25,10 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
             ASTNode statement = visit(statementCtx);
             if (statement != null) programNode.addStatement(statement);
         }
+
+        // Check for unused variables at the end
+        checkUnusedSymbols();
+
         return programNode;
     }
 
@@ -26,6 +38,30 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         VariableDeclarationNode variableDeclarationNode = new VariableDeclarationNode(kind);
         VariableAssignNode assignNode = (VariableAssignNode) visit(ctx.variableAssign());
         variableDeclarationNode.setAssignment(assignNode);
+
+        // SEMANTIC ERROR 1: Check for const without initialization
+        String varName = ctx.variableAssign().ID().getText();
+        Token token = ctx.variableAssign().ID().getSymbol();
+
+        if (kind.equals("const") && ctx.variableAssign().value() == null) {
+            symbolTable.addSemanticError("Const variable '" + varName + "' must be initialized at line " + token.getLine());
+        }
+
+        // Declare symbol in symbol table
+        String varType = "any"; // default type
+        if (ctx.variableAssign().typeDefine() != null) {
+            varType = ctx.variableAssign().typeDefine().ID().getText();
+        }
+
+        boolean declared = symbolTable.declareSymbol(varName, varType, kind, token.getLine(), token.getCharPositionInLine());
+
+        // Mark as initialized if there's a value
+        if (ctx.variableAssign().value() != null && declared) {
+            Symbol symbol = symbolTable.lookupSymbol(varName);
+            if (symbol != null) {
+                symbol.setInitialized(true);
+            }
+        }
 
         return variableDeclarationNode;
     }
@@ -56,6 +92,15 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
             ValueNode right = (ValueNode) visit(ctx.value(1));
             String op = ctx.binaryOp().getText();
 
+            // SEMANTIC ERROR 2: Type checking for binary operations
+            String leftType = getValueType(left);
+            String rightType = getValueType(right);
+
+            if (!isValidBinaryOperation(leftType, rightType, op)) {
+                symbolTable.addSemanticError("Invalid binary operation: " + leftType + " " + op + " " + rightType +
+                        " at line " + ctx.getStart().getLine());
+            }
+
             OperatorExpressionNode opExpr = new OperatorExpressionNode(left, op, right);
             ValueNode node = new ValueNode(left.getPrimaryValue());
             node.setOperatorExpression(opExpr);
@@ -69,7 +114,6 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
             return node;
         }
 
-        // إذا لم يكن تعبير ثنائي
         PrimaryValueNode primaryValue = (PrimaryValueNode) visit(ctx.primaryValue());
         ValueNode valueNode = new ValueNode(primaryValue);
 
@@ -83,12 +127,33 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         return valueNode;
     }
 
-
     @Override
     public ASTNode visitPrimaryValue(GrammarParser.PrimaryValueContext ctx) {
         if (ctx.NUMBER() != null) return new NumberNode(ctx.NUMBER().getText());
         if (ctx.STRING() != null) return new StringNode(ctx.STRING().getText().replaceAll("^\"|\"$", ""));
-        if (ctx.ID() != null) return new IdentifierNode(ctx.ID().getText());
+
+        if (ctx.ID() != null) {
+            String varName = ctx.ID().getText();
+
+            // SEMANTIC ERROR 3: Check for undefined variables
+            Symbol symbol = symbolTable.lookupSymbol(varName);
+            if (symbol == null) {
+                symbolTable.addSemanticError("Undefined variable '" + varName + "' at line " +
+                        ctx.ID().getSymbol().getLine());
+            } else {
+                // Mark as used
+                symbol.setUsed(true);
+
+                // SEMANTIC ERROR 4: Check for uninitialized variable usage
+                if (!symbol.isInitialized() && !symbol.getKind().equals("parameter")) {
+                    symbolTable.addSemanticError("Variable '" + varName + "' used before initialization at line " +
+                            ctx.ID().getSymbol().getLine());
+                }
+            }
+
+            return new IdentifierNode(varName);
+        }
+
         if (ctx.functionCall() != null) return visit(ctx.functionCall());
         if (ctx.LPAREN() != null) return new ParenthesizedValueNode((ValueNode) visit(ctx.value()));
         if (ctx.object() != null) return visit(ctx.object());
@@ -133,12 +198,32 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         ImportNode importNode = new ImportNode(source);
 
         if (ctx.defaultImport() != null) {
-            importNode.addImport(ctx.defaultImport().ID().getText());
+            String importName = ctx.defaultImport().ID().getText();
+            Token token = ctx.defaultImport().ID().getSymbol();
+
+            // Declare imported symbol
+            symbolTable.declareSymbol(importName, "imported", "import", token.getLine(), token.getCharPositionInLine());
+            Symbol symbol = symbolTable.lookupSymbol(importName);
+            if (symbol != null) {
+                symbol.setInitialized(true);
+            }
+
+            importNode.addImport(importName);
             importNode.setDefaultImport(true);
         } else {
             importNode.setHtmlImport(ctx.namedImports().LBRACE_HTML() != null);
             for (GrammarParser.ImportSpecifierContext spec : ctx.namedImports().importSpecifier()) {
-                importNode.addImport(spec.ID(0).getText());
+                String importName = spec.ID(0).getText();
+                Token token = spec.ID(0).getSymbol();
+
+                // Declare imported symbol
+                symbolTable.declareSymbol(importName, "imported", "import", token.getLine(), token.getCharPositionInLine());
+                Symbol symbol = symbolTable.lookupSymbol(importName);
+                if (symbol != null) {
+                    symbol.setInitialized(true);
+                }
+
+                importNode.addImport(importName);
             }
         }
         return importNode;
@@ -163,24 +248,63 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitClassDeclaration(GrammarParser.ClassDeclarationContext ctx) {
-        ClassNode classNode = new ClassNode(ctx.ID().getText());
+        String className = ctx.ID().getText();
+        Token token = ctx.ID().getSymbol();
+
+        // Declare class in symbol table
+        symbolTable.declareSymbol(className, "class", "class", token.getLine(), token.getCharPositionInLine());
+
+        // Enter class scope
+        symbolTable.enterScope(className);
+
+        ClassNode classNode = new ClassNode(className);
         for (GrammarParser.ClassBodyStatementContext stmtCtx : ctx.classBody().classBodyStatement()) {
             ASTNode member = visit(stmtCtx);
             if (member instanceof VariableDeclarationNode) classNode.addField((VariableDeclarationNode) member);
             else if (member instanceof FunctionDeclarationNode) classNode.addMethod((FunctionDeclarationNode) member);
             else classNode.addOtherMember(member);
         }
+
+        // Exit class scope
+        symbolTable.exitScope();
+
         return classNode;
     }
 
     @Override
     public ASTNode visitFunctionDeclaration(GrammarParser.FunctionDeclarationContext ctx) {
         String functionName = ctx.ID().getFirst().getText();
+        Token token = ctx.ID().getFirst().getSymbol();
+
+        // Declare function in symbol table
+        symbolTable.declareSymbol(functionName, "function", "function", token.getLine(), token.getCharPositionInLine());
+
+        // Enter function scope
+        symbolTable.enterScope(functionName);
+        inFunction = true;
+        currentFunctionName = functionName;
+
         List<String> parameters = new ArrayList<>();
         for (TerminalNode param : ctx.ID().subList(1, ctx.ID().size())) {
-            parameters.add(param.getText());
+            String paramName = param.getText();
+            Token paramToken = param.getSymbol();
+            parameters.add(paramName);
+
+            // Declare parameters in symbol table
+            symbolTable.declareSymbol(paramName, "any", "parameter", paramToken.getLine(), paramToken.getCharPositionInLine());
+            Symbol paramSymbol = symbolTable.lookupSymbol(paramName);
+            if (paramSymbol != null) {
+                paramSymbol.setInitialized(true);
+            }
         }
+
         FunctionBodyNode body = (FunctionBodyNode) visit(ctx.functionBody());
+
+        // Exit function scope
+        symbolTable.exitScope();
+        inFunction = false;
+        currentFunctionName = null;
+
         return new FunctionDeclarationNode(functionName, parameters, body);
     }
 
@@ -195,7 +319,18 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         } else {
             bodyNode.setBlockStyle(false);
             List<String> params = new ArrayList<>();
-            for (TerminalNode id : ctx.ID()) params.add(id.getText());
+            for (TerminalNode id : ctx.ID()) {
+                String paramName = id.getText();
+                Token paramToken = id.getSymbol();
+                params.add(paramName);
+
+                // Declare arrow function parameters
+                symbolTable.declareSymbol(paramName, "any", "parameter", paramToken.getLine(), paramToken.getCharPositionInLine());
+                Symbol paramSymbol = symbolTable.lookupSymbol(paramName);
+                if (paramSymbol != null) {
+                    paramSymbol.setInitialized(true);
+                }
+            }
             bodyNode.setParams(params);
             bodyNode.setArrowValue((ValueNode) visit(ctx.value()));
         }
@@ -208,8 +343,15 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitReturn(GrammarParser.ReturnContext ctx) {
+        // SEMANTIC ERROR 5: Return statement outside function
+        if (!inFunction) {
+            symbolTable.addSemanticError("Return statement outside function at line " + ctx.getStart().getLine());
+        }
+
         ReturnNode returnNode = new ReturnNode();
-        returnNode.value = visit(ctx.value());
+        if (ctx.value() != null) {
+            returnNode.value = visit(ctx.value());
+        }
         return returnNode;
     }
 
@@ -220,11 +362,13 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
             ifStatementNode.addCondition((IfBodyNode) visit(ifCtx));
         }
         if (ctx.ELSE() != null) {
+            symbolTable.enterScope("else");
             List<ASTNode> elseStatements = new ArrayList<>();
             for (var stmt : ctx.statement()) {
                 elseStatements.add(visit(stmt));
             }
             ifStatementNode.setElseBlock(elseStatements);
+            symbolTable.exitScope();
         }
         return ifStatementNode;
     }
@@ -252,9 +396,14 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         }
 
         ifBodyNode.setCondition(left);
+
+        // Enter if scope
+        symbolTable.enterScope("if");
         for (var stmt : ctx.statement()) {
             ifBodyNode.addStatement(visit(stmt));
         }
+        symbolTable.exitScope();
+
         return ifBodyNode;
     }
 
@@ -262,18 +411,15 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
     public ASTNode visitComponentStatement(GrammarParser.ComponentStatementContext ctx) {
         ComponentStatementNode componentNode = new ComponentStatementNode();
 
-        // إذا كان هناك SELECTOR
         if (ctx.SELECTOR() != null) {
-            String selector = ctx.STRING().getText().replaceAll("^\"|\"$", ""); // نحذف علامات التنصيص
+            String selector = ctx.STRING().getText().replaceAll("^\"|\"$", "");
             componentNode.setSelector(selector);
         }
 
-        // الـ TEMPLATE (قيمة)
         ValueNode templateValue = (ValueNode) visit(ctx.value(0));
         componentNode.setTemplate(templateValue);
 
-        // بقية الخصائص (ID : value)
-        int startIndex = ctx.SELECTOR() != null ? 1 : 0;  // تحديد بداية خصائص ID: value حسب وجود SELECTOR
+        int startIndex = ctx.SELECTOR() != null ? 1 : 0;
         for (int i = startIndex; i < ctx.ID().size(); i++) {
             String key = ctx.ID(i).getText();
             ValueNode value = (ValueNode) visit(ctx.value(i + 1));
@@ -283,9 +429,34 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         return componentNode;
     }
 
+    @Override
+    public ASTNode visitFunctionCall(GrammarParser.FunctionCallContext ctx) {
+        String functionName = ctx.ID().getText();
+        Token token = ctx.ID().getSymbol();
+
+        // Check if function exists
+        Symbol function = symbolTable.lookupSymbol(functionName);
+        if (function == null) {
+            symbolTable.addSemanticError("Undefined function '" + functionName + "' at line " + token.getLine());
+        } else if (!function.getKind().equals("function")) {
+            symbolTable.addSemanticError("'" + functionName + "' is not a function at line " + token.getLine());
+        } else {
+            function.setUsed(true);
+        }
+
+        // Visit function arguments
+        FunctionCallNode functionCallNode = new FunctionCallNode(functionName);
+        if (ctx.value() != null) {
+            for (var valueCtx : ctx.value()) {
+                functionCallNode.addArgument((ValueNode) visit(valueCtx));
+            }
+        }
+
+        return functionCallNode;
+    }
+
     public ASTNode visitHtml(GrammarParser.HtmlContext ctx) {
         if (ctx.open_tag() != null && ctx.close_tag() != null) {
-            // Full tag with children
             HtmlNode node = new HtmlNode(HtmlNode.HtmlType.ELEMENT);
             node.setTagName(ctx.open_tag().ID().getText());
 
@@ -303,7 +474,6 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
             return node;
 
         } else if (ctx.single_tag() != null) {
-            // Self-closing tag
             HtmlNode node = new HtmlNode(HtmlNode.HtmlType.SELF_CLOSING);
             node.setTagName(ctx.single_tag().ID().getText());
 
@@ -316,13 +486,11 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
             return node;
 
         } else if (ctx.TEXT_HTML() != null) {
-            // Plain text node
             HtmlNode node = new HtmlNode(HtmlNode.HtmlType.TEXT);
             node.setTextContent(ctx.TEXT_HTML().getText());
             return node;
 
         } else if (ctx.getStart().getType() == gen.MyLexer.LBRACE_HTML || ctx.getStart().getType() == gen.MyLexer.LBRACE) {
-            // embedded {{ ... }} or { ... }
             HtmlNode node = new HtmlNode(HtmlNode.HtmlType.EMBEDDED_STATEMENTS);
             for (GrammarParser.StatementContext stmt : ctx.statement()) {
                 node.addEmbeddedStatement(visit(stmt));
@@ -333,7 +501,51 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         return null;
     }
 
-    // Helper to remove quotes from STRING token
+    // Helper methods for semantic analysis
+    private String getValueType(ValueNode valueNode) {
+        if (valueNode == null || valueNode.getPrimaryValue() == null) return "unknown";
+
+        PrimaryValueNode primaryValue = valueNode.getPrimaryValue();
+        if (primaryValue instanceof NumberNode) return "number";
+        if (primaryValue instanceof StringNode) return "string";
+        if (primaryValue instanceof IdentifierNode) {
+            String varName = ((IdentifierNode) primaryValue).getName();
+            Symbol symbol = symbolTable.lookupSymbol(varName);
+            return symbol != null ? symbol.getType() : "unknown";
+        }
+        return "unknown";
+    }
+
+    private boolean isValidBinaryOperation(String leftType, String rightType, String operator) {
+        switch (operator) {
+            case "+":
+                return (leftType.equals("number") && rightType.equals("number")) ||
+                        (leftType.equals("string") || rightType.equals("string"));
+            case "-":
+            case "*":
+            case "/":
+            case "%":
+                return leftType.equals("number") && rightType.equals("number");
+            case "==":
+            case "!=":
+            case "===":
+            case "!==":
+                return true; // Any types can be compared
+            case "<":
+            case ">":
+            case "<=":
+            case ">=":
+                return leftType.equals("number") && rightType.equals("number");
+            default:
+                return false;
+        }
+    }
+
+    private void checkUnusedSymbols() {
+        // This would require access to all symbols in all scopes
+        // Implementation depends on your SymbolTable structure
+    }
+
     private String stripQuotes(String s) {
         if (s == null || s.length() < 2) return s;
         return s.substring(1, s.length() - 1);
