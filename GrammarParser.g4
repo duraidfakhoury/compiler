@@ -2,134 +2,145 @@ parser grammar GrammarParser;
 
 options { tokenVocab=MyLexer; }
 
-
-program: (statement)+ ;
+program
+    : statements+=statement+                        #programRule
+    ;
 
 statement
-    : (
-        functionDeclaration
-        | functionCall
-        | variableDeclaration
-        | variableAssign
-        | value
-        | html
-        | return
-        | ifStatement
-        | importStatement
-        | iterationStatement
-        | componentStatement
-        | classDeclaration
-        | exportStatement
-    )
-    SEMICOLON?
+    : decl=functionDeclaration SEMICOLON?           #stmtFunctionDecl
+    | call=functionCall SEMICOLON?                  #stmtFunctionCall
+    | vardecl=variableDeclaration SEMICOLON?        #stmtVarDecl
+    | varassign=variableAssign SEMICOLON?           #stmtVarAssign
+    | val=value SEMICOLON?                          #stmtValue
+    | h=html SEMICOLON?                             #stmtHtml
+    | ret=return SEMICOLON?                         #stmtReturn
+    | ifstmt=ifStatement                            #stmtIf
+    | imp=importStatement                           #stmtImport
+    | loop=iterationStatement                       #stmtIteration
+    | comp=componentStatement                       #stmtComponent
+    | classDecl=classDeclaration                    #stmtClass
+    | exp=exportStatement                           #stmtExport
     ;
 
 return
-    : RETURN value
+    : RETURN expr=value                             #returnRule
     ;
 
 ifBody
-    : IF LPAREN (value ((DOUBLE_ASSIGN_ID|NOT_EQUAL|DOUBLE_ASSIGN) value)*)? RPAREN
-    LBRACE (statement)* RBRACE
+    : IF LPAREN left=value (condOps+=(DOUBLE_ASSIGN_ID|NOT_EQUAL|DOUBLE_ASSIGN) right+=value)* RPAREN
+      LBRACE stmts+=statement* RBRACE               #ifBodyRule
     ;
 
 ifStatement
-    : ifBody
-    (ELSE ifBody)*
-    (ELSE LBRACE (statement)* RBRACE)?
+    : ifBlocks+=ifBody
+      (ELSE elseIfs+=ifBody)*
+      (ELSE elseBlock=LBRACE elseStmts+=statement* RBRACE)?  #ifStatementRule
     ;
 
-iterationStatement: DO statement WHILE LPAREN value RPAREN
-    | WHILE LPAREN value RPAREN (((LBRACE|LBRACE_HTML) (statement)* (RBRACE|RBRACE_HTML)) | statement)
-    | FOR LPAREN (value | variableDeclaration)?
-    SEMICOLON value? SEMICOLON value? RPAREN statement
-    | FOR LPAREN (value | variableDeclaration)
-    IN value RPAREN statement
+iterationStatement
+    : DO LBRACE body+=statement* RBRACE WHILE LPAREN cond=value RPAREN   #doWhileLoop
+    | WHILE LPAREN cond=value RPAREN
+        (block=(LBRACE|LBRACE_HTML) stmts+=statement* (RBRACE|RBRACE_HTML) | single=statement)  #whileLoop
+    | FOR LPAREN initVal=variableAssign? SEMICOLON cond=value? SEMICOLON step=value? RPAREN
+        LBRACE body+=statement* RBRACE                                   #forLoopAssign
+    | FOR LPAREN initDecl=variableDeclaration SEMICOLON cond=value? SEMICOLON step=value? RPAREN
+        LBRACE body+=statement* RBRACE                                   #forLoopDecl
+    | FOR LPAREN iterVal=value IN iterable=value RPAREN
+        LBRACE body+=statement* RBRACE                                   #forInLoopVal
+    | FOR LPAREN iterDecl=variableDeclaration IN iterable=value RPAREN
+        LBRACE body+=statement* RBRACE                                   #forInLoopDecl
     ;
 
 functionDeclaration
-    : FUNCTION ID LPAREN (ID (COMMA ID)*)? RPAREN functionBody
+    : FUNCTION funcName=ID LPAREN (params+=ID (COMMA params+=ID)*)? RPAREN body=functionBody   #functionDeclarationRule
     ;
 
 functionBody
-    : typeDefine? LBRACE statement* RBRACE
-    | ((LPAREN (ID (COMMA ID)*)? RPAREN) | ID) typeDefine? ARROW value
+    : type=typeDefine? LBRACE stmts+=statement* RBRACE         #functionBlock
+    | ((LPAREN (params+=ID (COMMA params+=ID)*)? RPAREN) | singleParam=ID) type=typeDefine? ARROW expr=value  #functionArrow
     ;
 
 functionCall
-    : ID LPAREN (value (COMMA value)*)? RPAREN
+    : funcName=ID LPAREN (args+=value (COMMA args+=value)*)? RPAREN   #functionCallRule
     ;
 
 variableDeclaration
-    : (CONST | LET | VAR) variableAssign
+    : kind=(CONST | LET | VAR) assign=variableAssign          #varDeclarationRule
     ;
 
 variableAssign
-    : ID typeDefine? (ASSIGN value)? ;
+    : varName=ID type=typeDefine? (ASSIGN expr=value)?        #varAssignRule
+    ;
 
 importStatement
-    : IMPORT (defaultImport | namedImports) FROM STRING
+    : IMPORT (def=defaultImport | named=namedImports) FROM path=STRING   #importRule
     ;
 
 defaultImport
-    : ID
+    : id=ID                                                  #defaultImportRule
     ;
 
 namedImports
-    : (LBRACE | LBRACE_HTML ) importSpecifier (COMMA importSpecifier)* (RBRACE | RBRACE_HTML )
+    : (LBRACE | LBRACE_HTML) imports+=importSpecifier (COMMA imports+=importSpecifier)* (RBRACE | RBRACE_HTML ) #namedImportsRule
     ;
 
 importSpecifier
-    : ID (AS ID)?
+    : name=ID (AS alias=ID)?                                 #importSpecifierRule
     ;
 
 exportStatement
-    : EXPORT (classDeclaration|value|functionBody)
+    : EXPORT (cls=classDeclaration | val=value | func=functionBody) #exportRule
     ;
 
 classDeclaration
-    : CLASS ID classBody
+    : CLASS name=ID body=classBody                           #classDeclarationRule
     ;
-classBody : (LBRACE) classBodyStatement* (RBRACE) ;
+
+classBody
+    : LBRACE stmts+=classBodyStatement* RBRACE               #classBodyRule
+    ;
 
 classBodyStatement
-    : variableDeclaration
-    | functionDeclaration
+    : var=variableDeclaration                                #classVarDecl
+    | func=functionDeclaration                               #classFuncDecl
     ;
 
 componentStatement
-    : COMPONENT LPAREN LBRACE (SELECTOR COLON STRING COMMA)?
-    TEMPLATE COLON (value)
-    (COMMA ID COLON value)* RBRACE RPAREN
+    : COMPONENT LPAREN LBRACE
+        (SELECTOR COLON selector=STRING COMMA)?
+        TEMPLATE COLON template=value
+        (COMMA keys+=ID COLON vals+=value)*
+      RBRACE RPAREN                                          #componentRule
     ;
 
 typeDefine
-    : COLON ID (LBRACKET RBRACKET)?
+    : COLON type=ID (LBRACKET RBRACKET)?                     #typeDefineRule
     ;
 
 asType
-    : AS ID (LBRACKET RBRACKET)?
+    : AS type=ID (LBRACKET RBRACKET)?                        #asTypeRule
     ;
 
 value
-    : value binaryOp value
-    | primaryValue (QMARK|EMARK)? asType?
+    : left=value op=binaryOp right=value                     #binaryValue
+    | pv=primaryValue (qm=(QMARK|EMARK))? type=asType?       #primaryValueExpr
     ;
 
 primaryValue
-    : NUMBER
-    | STRING
-    | functionCall
-    | ID
-    | LPAREN value RPAREN
-    | object
-    | array
-    | arrayAccess
-    | functionBody
-    | increase_variable
-    | decrease_variable
-    | (BACKTICK|BACKTICK_HTML) html* (BACKTICK|BACKTICK_HTML)
+    : num=NUMBER                                             #numberValue
+    | str=STRING                                             #stringValue
+    | call=functionCall                                      #callValue
+    | id=ID                                                  #idValue
+    | LPAREN inner=value RPAREN                              #parenValue
+    | obj=object                                             #objectValue
+    | arr=array                                              #arrayValue
+    | access=arrayAccess                                     #arrayAccessValue
+    | body=functionBody                                      #functionValue
+    | inc=increase_variable                                  #incValue
+    | dec=decrease_variable                                  #decValue
+    | bt=(BACKTICK|BACKTICK_HTML) content+=html* (BACKTICK|BACKTICK_HTML) #templateValue
     ;
+
 binaryOp
     : DOUBLE_ASSIGN
     | DOUBLE_ASSIGN_ID
@@ -139,62 +150,83 @@ binaryOp
     | DOUBLE_QMARK
     | (RTAG (ASSIGN|DOUBLE_ASSIGN)?)
     | ((LTAG|LTAG_HTML) (ASSIGN|DOUBLE_ASSIGN)?)
+    | PLUS
+    | MINUS
+    | MULT
+    | DIVID
     ;
+
 operatorExpression
-    : DOT value
-    | comparison
-    | DOUBLE_QMARK value
-    | OR value
-    | AND value
+    : DOT val=value
+    | comp=comparison
+    | DOUBLE_QMARK val=value
+    | OR val=value
+    | AND val=value
     ;
 
 increase_variable
-    : (ID PLUSPLUS) | (PLUSPLUS ID)
+    : id=ID PLUSPLUS
+    | PLUSPLUS id=ID
     ;
 
 decrease_variable
-    : (ID MINUSMINUS) | (MINUSMINUS ID)
+    : id=ID MINUSMINUS
+    | MINUSMINUS id=ID
     ;
 
 comparison
-    : (DOUBLE_ASSIGN_ID | DOUBLE_ASSIGN | NOT_EQUAL | (RTAG (ASSIGN|DOUBLE_ASSIGN)?) | ((LTAG|LTAG_HTML) (ASSIGN|DOUBLE_ASSIGN)?)) primaryValue
+    : DOUBLE_ASSIGN_ID   right=primaryValue   #idEqComparison
+    | DOUBLE_ASSIGN      right=primaryValue   #eqComparison
+    | NOT_EQUAL          right=primaryValue   #neqComparison
+    | RTAG (ASSIGN|DOUBLE_ASSIGN)? right=primaryValue   #rtagComparison
+    | (LTAG|LTAG_HTML) (ASSIGN|DOUBLE_ASSIGN)? right=primaryValue  #ltagComparison
     ;
 
+
 object
-    : (LBRACE) ( pair (COMMA pair)*)? (RBRACE)
+    : LBRACE pairs+=pair (COMMA pairs+=pair)*? RBRACE         #objectRule
     ;
+
 pair
-    : ID COLON value
+    : key=ID COLON val=value                                 #pairRule
     ;
 
 array
-    : LBRACKET (value (COMMA value)*)? RBRACKET
+    : LBRACKET elems+=value (COMMA elems+=value)*? RBRACKET   #arrayRule
     ;
 
 arrayAccess
-    : ID LBRACKET value RBRACKET
+    : arr=ID LBRACKET idx=value RBRACKET                      #arrayAccessRule
     ;
 
-// html:
-attribute
-    : ID ASSIGN STRING
+htmlElementName
+    : DIV
+    | P
+    | H1 | H2 | H3 | H4 | H5 | H6
+    | BUTTON
+    | SPAN
+    | A
+    | IMG
+    | INPUT
+    | FORM
+    | ID
     ;
 
 open_tag
-    : (LTAG|LTAG_HTML) ID (attribute)* RTAG
+    : (LTAG|LTAG_HTML) name=htmlElementName RTAG              #openTagRule
     ;
 
 close_tag
-    : (LTAG|LTAG_HTML) SLASH ID RTAG
+    : (LTAG|LTAG_HTML) SLASH name=htmlElementName RTAG        #closeTagRule
     ;
 
 single_tag
-    : (LTAG|LTAG_HTML) ID (attribute)* SLASH RTAG
+    : (LTAG|LTAG_HTML) name=htmlElementName SLASH RTAG        #singleTagRule
     ;
 
 html
-    : open_tag (html)* close_tag
-    | single_tag
-    | (LBRACE_HTML statement* (RBRACE_HTML|(RBRACE RBRACE)))
-    | TEXT_HTML
+    : open=open_tag inner+=html* close=close_tag              #htmlElement
+    | single=single_tag                                       #htmlSingle
+    | block=LBRACE_HTML stmts+=statement* (RBRACE_HTML|(RBRACE RBRACE)) #htmlBlock
+    | text=TEXT_HTML                                          #htmlText
     ;

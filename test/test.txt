@@ -2,7 +2,7 @@ import { Component1, Component2 } from "library"
 
 @component({
     selector: "path",
-    template: `<div>hello world</div>`
+    template: `<div>hello world </div>`
 })
 
 export class MyClass {
@@ -15,13 +15,8 @@ export class MyClass {
         return "buy"}
     return products
     }
+
 }
-
-    let products: string = ''
-    let test: string = ''
-
-products == test
-
 products: Product[] = [
     {
         name: "product1",

@@ -32,7 +32,6 @@ public class SymbolTable {
             return;
         }
 
-        // Find the longest name, type, kind, and scope for formatting
         int maxNameLength = 4; // "NAME"
         int maxTypeLength = 4; // "TYPE"
         int maxKindLength = 4; // "KIND"
@@ -55,7 +54,6 @@ public class SymbolTable {
             }
         }
 
-        // Ensure minimum column widths
         maxNameLength = Math.max(maxNameLength, 10);
         maxTypeLength = Math.max(maxTypeLength, 10);
         maxKindLength = Math.max(maxKindLength, 10);
@@ -138,7 +136,6 @@ public class SymbolTable {
     }
 
     public Symbol lookupSymbol(String name) {
-        // Search from current scope up to global scope
         for (int i = scopeStack.size() - 1; i >= 0; i--) {
             String scope = scopeStack.get(i);
             List<Symbol> scopeSymbols = symbols.get(scope);
