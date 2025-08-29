@@ -11,13 +11,11 @@ public class Main {
         String input = "test/test.txt";
 
         try {
-            // Set up lexer and parser
             CharStream inputStream = CharStreams.fromFileName(input);
             MyLexer lexer = new MyLexer(inputStream);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             GrammarParser parser = new GrammarParser(tokens);
 
-            // Add error listener for syntax errors
             parser.removeErrorListeners();
             parser.addErrorListener(new BaseErrorListener() {
                 @Override
@@ -27,16 +25,13 @@ public class Main {
                 }
             });
 
-            // Parse the input
             GrammarParser.ProgramContext tree = parser.program();
 
-            // Check for syntax errors
             if (parser.getNumberOfSyntaxErrors() > 0) {
                 System.out.println("\n✗ Compilation failed due to syntax errors.");
                 return;
             }
 
-            // Generate AST
             System.out.println("\n" + "=".repeat(60));
             System.out.println("ABSTRACT SYNTAX TREE:");
             System.out.println("=".repeat(60));
@@ -46,25 +41,20 @@ public class Main {
             System.out.println(ast.toString());
             System.out.println("\n✓ AST Generated Successfully!");
 
-            // Print symbol table from BaseVisitor
             System.out.println("\n" + "=".repeat(60));
             System.out.println("SYMBOL TABLE (BASIC):");
             System.out.println("=".repeat(60));
 
-            // If your BaseVisitor has a getSymbolTable method, use it
-            // Otherwise, access the symbolTable field directly if it's public
             try {
                 visitor.getSymbolTable().print();
             } catch (Exception e) {
                 System.out.println("Could not print basic symbol table: " + e.getMessage());
             }
 
-            // Perform semantic analysis
             System.out.println("\n" + "=".repeat(60));
             System.out.println("SEMANTIC ANALYSIS:");
             System.out.println("=".repeat(60));
 
-            // Print symbols grouped by scope
             System.out.println("\nSymbols By Scope:");
             System.out.println("-".repeat(30));
             visitor.getSymbolTable().printByScope();

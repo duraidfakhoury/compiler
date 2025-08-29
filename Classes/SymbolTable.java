@@ -17,8 +17,41 @@ public class SymbolTable {
     }
 
     /**
-     * Basic print method that prints all symbols in the symbol table
+     * Look up a symbol in the current scope only (not parent scopes)
+     * This method is used by BaseVisitor for checking redeclarations
      */
+    public Symbol lookupSymbolInCurrentScope(String name) {
+        String currentScope = getCurrentScope();
+        List<Symbol> scopeSymbols = symbols.get(currentScope);
+
+        if (scopeSymbols != null) {
+            for (Symbol symbol : scopeSymbols) {
+                if (symbol.getName().equals(name)) {
+                    return symbol;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get all unused symbols across all scopes
+     * This method is used by BaseVisitor for checking unused variables
+     */
+    public List<Symbol> getUnusedSymbols() {
+        List<Symbol> unusedSymbols = new ArrayList<>();
+
+        for (List<Symbol> scopeSymbols : symbols.values()) {
+            for (Symbol symbol : scopeSymbols) {
+                if (!symbol.isUsed() && !symbol.getKind().equals("parameter")) {
+                    unusedSymbols.add(symbol);
+                }
+            }
+        }
+
+        return unusedSymbols;
+    }
+
     public void print() {
         int totalSymbols = 0;
 
@@ -32,11 +65,10 @@ public class SymbolTable {
             return;
         }
 
-        // Find the longest name, type, kind, and scope for formatting
-        int maxNameLength = 4; // "NAME"
-        int maxTypeLength = 4; // "TYPE"
-        int maxKindLength = 4; // "KIND"
-        int maxScopeLength = 5; // "SCOPE"
+        int maxNameLength = 4;
+        int maxTypeLength = 4;
+        int maxKindLength = 4;
+        int maxScopeLength = 5;
 
         for (List<Symbol> scopeSymbols : symbols.values()) {
             for (Symbol symbol : scopeSymbols) {
@@ -55,13 +87,11 @@ public class SymbolTable {
             }
         }
 
-        // Ensure minimum column widths
         maxNameLength = Math.max(maxNameLength, 10);
         maxTypeLength = Math.max(maxTypeLength, 10);
         maxKindLength = Math.max(maxKindLength, 10);
         maxScopeLength = Math.max(maxScopeLength, 10);
 
-        // Print header
         String format = "| %-" + maxNameLength + "s | %-" + maxTypeLength + "s | %-" + maxKindLength + "s | %-" + maxScopeLength + "s | %-5s | %-4s |";
         String separator = "+" + repeatString("-", maxNameLength + 2) + "+" + repeatString("-", maxTypeLength + 2) + "+" +
                 repeatString("-", maxKindLength + 2) + "+" + repeatString("-", maxScopeLength + 2) + "+" +

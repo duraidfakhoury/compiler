@@ -13,6 +13,18 @@ public class FunctionDeclarationNode extends ASTNode {
         this.body = body;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public List<String> getParameters() {
+        return parameters;
+    }
+
+    public FunctionBodyNode getBody() {
+        return body;
+    }
+
     @Override
     public String toString() {
         return "\nFunctionDeclarationNode{" +
