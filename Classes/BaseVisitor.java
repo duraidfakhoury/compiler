@@ -105,19 +105,22 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
 
         VariableAssignNode assignNode = (VariableAssignNode) visit(ctx.assign);
         variableDeclarationNode.setAssignment(assignNode);
+        GrammarParser.VariableAssignContext asign = ctx.assign;
+        GrammarParser.VarAssignRuleContext varassign = (GrammarParser.VarAssignRuleContext) asign;
+        String varName = varassign.varName.getText(); // Direct access from context
+        Token token = varassign.varName;
 
-        String varName = ctx.assign.varName.getText(); // Direct access from context
-        Token token = ctx.assign.varName.getSymbol();
-
-        if (kind.equals("const") && ctx.assign.expr == null) {
+        if (kind.equals("const") && varassign.expr == null) {
             symbolTable.addSemanticError(
                     "Const variable '" + varName + "' must be initialized at line " + token.getLine()
             );
         }
 
         String varType = "any";
-        if (ctx.assign.type != null) {
-            varType = ctx.assign.type.type.getText();
+        if (varassign.type != null) {
+            GrammarParser.TypeDefineContext typeDefine = varassign.type;
+            GrammarParser.TypeDefineRuleContext Define = (GrammarParser.TypeDefineRuleContext) typeDefine;
+            varType = Define.type.getText();
         }
 
         boolean declared = symbolTable.declareSymbol(
@@ -128,7 +131,7 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
                 token.getCharPositionInLine()
         );
 
-        if (ctx.assign.expr != null && declared) {
+        if (varassign.expr != null && declared) {
             Symbol symbol = symbolTable.lookupSymbol(varName);
             if (symbol != null) {
                 symbol.setInitialized(true);
@@ -235,14 +238,14 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         Symbol symbol = symbolTable.lookupSymbol(varName);
         if (symbol == null) {
             symbolTable.addSemanticError("Undefined variable '" + varName + "' at line " +
-                    ctx.id.getSymbol().getLine());
+                    ctx.id.getLine());
         } else {
             symbol.setUsed(true);
 
             // SEMANTIC ERROR 4: Check for uninitialized variable usage
             if (!symbol.isInitialized() && !symbol.getKind().equals("parameter")) {
                 symbolTable.addSemanticError("Variable '" + varName + "' used before initialization at line " +
-                        ctx.id.getSymbol().getLine());
+                        ctx.id.getLine());
             }
         }
 
@@ -306,8 +309,9 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
     public ASTNode visitObjectRule(GrammarParser.ObjectRuleContext ctx) {
         ObjectNode objectNode = new ObjectNode();
         for (GrammarParser.PairContext pairCtx : ctx.pairs) {
-            String key = pairCtx.key.getText();
-            ValueNode valueNode = (ValueNode) visit(pairCtx.val);
+            GrammarParser.PairRuleContext pair = (GrammarParser.PairRuleContext) pairCtx;
+            String key = pair.key.getText();
+            ValueNode valueNode = (ValueNode) visit(pair.val);
             objectNode.addProperty(new PropertyNode(key, valueNode));
         }
         return objectNode;
@@ -333,8 +337,10 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         ImportNode importNode = new ImportNode(source);
 
         if (ctx.def != null) {
-            String importName = ctx.def.id.getText();
-            Token token = ctx.def.id.getSymbol();
+            GrammarParser.DefaultImportContext importContext = ctx.def;
+            GrammarParser.DefaultImportRuleContext defaultImportRuleContext = (GrammarParser.DefaultImportRuleContext) importContext;
+            String importName = defaultImportRuleContext.id.getText();
+            Token token = defaultImportRuleContext.id;
 
             // Declare imported symbol
             symbolTable.declareSymbol(importName, "imported", "import", token.getLine(), token.getCharPositionInLine());
@@ -348,10 +354,13 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         }
 
         if (ctx.named != null) {
-            importNode.setHtmlImport(ctx.named.LBRACE_HTML() != null);
-            for (GrammarParser.ImportSpecifierContext spec : ctx.named.imports) {
-                String importName = spec.name.getText();
-                Token token = spec.name.getSymbol();
+            GrammarParser.NamedImportsContext importContext = ctx.named;
+            GrammarParser.NamedImportsRuleContext namedImportsRuleContext = (GrammarParser.NamedImportsRuleContext) importContext;
+            importNode.setHtmlImport(namedImportsRuleContext.LBRACE_HTML() != null);
+            for (GrammarParser.ImportSpecifierContext spec : namedImportsRuleContext.imports) {
+                GrammarParser.ImportSpecifierRuleContext specifierRuleContext = (GrammarParser.ImportSpecifierRuleContext) spec ;
+                String importName = specifierRuleContext.name.getText();
+                Token token = specifierRuleContext.name;
 
                 // Declare imported symbol
                 symbolTable.declareSymbol(importName, "imported", "import", token.getLine(), token.getCharPositionInLine());
@@ -401,7 +410,7 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitClassDeclarationRule(GrammarParser.ClassDeclarationRuleContext ctx) {
         String className = ctx.name.getText();
-        Token token = ctx.name.getSymbol();
+        Token token = ctx.name;
 
         // Declare class in symbol table
         symbolTable.declareSymbol(className, "class", "class", token.getLine(), token.getCharPositionInLine());
@@ -410,7 +419,10 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         symbolTable.enterScope(className);
 
         ClassNode classNode = new ClassNode(className);
-        for (GrammarParser.ClassBodyStatementContext stmtCtx : ctx.body.stmts) {
+        GrammarParser.ClassBodyContext Body = ctx.body;
+        GrammarParser.ClassBodyRuleContext bodyRuleContext = (GrammarParser.ClassBodyRuleContext) Body;
+
+        for (GrammarParser.ClassBodyStatementContext stmtCtx : bodyRuleContext.stmts) {
             ASTNode member = visit(stmtCtx);
             if (member instanceof VariableDeclarationNode) classNode.addField((VariableDeclarationNode) member);
             else if (member instanceof FunctionDeclarationNode) classNode.addMethod((FunctionDeclarationNode) member);
@@ -441,7 +453,7 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitFunctionDeclarationRule(GrammarParser.FunctionDeclarationRuleContext ctx) {
         String functionName = ctx.funcName.getText();
-        Token token = ctx.funcName.getSymbol();
+        Token token = ctx.funcName; // <- استخدم getSymbol() هنا
 
         // Declare function in symbol table
         symbolTable.declareSymbol(functionName, "function", "function", token.getLine(), token.getCharPositionInLine());
@@ -453,9 +465,10 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
 
         List<String> parameters = new ArrayList<>();
         if (ctx.params != null) {
-            for (TerminalNode param : ctx.params) {
+            for (Token param : ctx.params) {
                 String paramName = param.getText();
-                Token paramToken = param.getSymbol();
+                Token paramToken = param; // <- صحيح
+
                 parameters.add(paramName);
 
                 // Declare parameters in symbol table
@@ -476,6 +489,7 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
 
         return new FunctionDeclarationNode(functionName, parameters, body);
     }
+
 
     @Override
     public ASTNode visitFunctionBlock(GrammarParser.FunctionBlockContext ctx) {
@@ -503,7 +517,7 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         // Handle parameters - either single param or multiple params in parentheses
         if (ctx.singleParam != null) {
             String paramName = ctx.singleParam.getText();
-            Token paramToken = ctx.singleParam.getSymbol();
+            Token paramToken = ctx.singleParam;
             params.add(paramName);
 
             // Declare arrow function parameter
@@ -513,9 +527,9 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
                 paramSymbol.setInitialized(true);
             }
         } else if (ctx.params != null) {
-            for (TerminalNode id : ctx.params) {
+            for (Token id : ctx.params) {
                 String paramName = id.getText();
-                Token paramToken = id.getSymbol();
+                Token paramToken = id;
                 params.add(paramName);
 
                 // Declare arrow function parameters
@@ -540,7 +554,7 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitFunctionCallRule(GrammarParser.FunctionCallRuleContext ctx) {
         String functionName = ctx.funcName.getText();
-        Token token = ctx.funcName.getSymbol();
+        Token token = ctx.funcName;
 
         // Check if function exists
         Symbol function = symbolTable.lookupSymbol(functionName);
@@ -779,15 +793,22 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
 
     // Helper methods
     private String getHtmlElementName(GrammarParser.Open_tagContext openTag) {
-        if (openTag != null) {
-            return openTag.name.getText();
+
+        GrammarParser.OpenTagRuleContext OpenTagRule = (GrammarParser.OpenTagRuleContext) openTag;
+
+        if (OpenTagRule != null) {
+            return OpenTagRule.name.getText();
         }
         return "";
     }
 
     private String getHtmlElementName(GrammarParser.Single_tagContext singleTag) {
-        if (singleTag != null) {
-            return singleTag.name.getText();
+
+        GrammarParser.SingleTagRuleContext singleTagRuleContext = (GrammarParser.SingleTagRuleContext) singleTag;
+
+
+        if (singleTagRuleContext != null) {
+            return singleTagRuleContext.name.getText();
         }
         return "";
     }
@@ -851,7 +872,7 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitIncrease_variable(GrammarParser.Increase_variableContext ctx) {
         String varName = ctx.id.getText();
-        Token token = ctx.id.getSymbol();
+        Token token = ctx.id;
 
         // Check if variable exists and is initialized
         Symbol symbol = symbolTable.lookupSymbol(varName);
@@ -868,14 +889,14 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
             }
         }
 
-        boolean isPrefix = ctx.PLUSPLUS().getSymbol().getTokenIndex() < ctx.id.getSymbol().getTokenIndex();
+        boolean isPrefix = ctx.PLUSPLUS().getSymbol().getTokenIndex() < ctx.id.getTokenIndex();
         return new IncrementNode(varName, isPrefix);
     }
 
     @Override
     public ASTNode visitDecrease_variable(GrammarParser.Decrease_variableContext ctx) {
         String varName = ctx.id.getText();
-        Token token = ctx.id.getSymbol();
+        Token token = ctx.id;
 
         // Check if variable exists and is initialized
         Symbol symbol = symbolTable.lookupSymbol(varName);
@@ -886,13 +907,12 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
             if (!symbol.isInitialized()) {
                 symbolTable.addSemanticError("Variable '" + varName + "' used before initialization at line " + token.getLine());
             }
-            // Check if it's a number type for decrement operation
             if (!symbol.getType().equals("number") && !symbol.getType().equals("any")) {
                 symbolTable.addSemanticError("Cannot decrement non-numeric variable '" + varName + "' at line " + token.getLine());
             }
         }
 
-        boolean isPrefix = ctx.MINUSMINUS().getSymbol().getTokenIndex() < ctx.id.getSymbol().getTokenIndex();
+        boolean isPrefix = ctx.MINUSMINUS().getSymbol().getTokenIndex() < ctx.id.getTokenIndex();
         return new DecrementNode(varName, isPrefix);
     }
 

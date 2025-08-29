@@ -2,7 +2,7 @@ import { Component1, Component2 } from "library"
 
 @component({
     selector: "path",
-    template: `<div>hello world </div>`
+    template: ``
 })
 
 export class MyClass {
