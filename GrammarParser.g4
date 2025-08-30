@@ -20,6 +20,7 @@ statement
     | comp=componentStatement                       #stmtComponent
     | classDecl=classDeclaration                    #stmtClass
     | exp=exportStatement                           #stmtExport
+    | typeDecl=typeDeclaration SEMICOLON?           #stmtTypeDecl
     ;
 
 return
@@ -113,8 +114,27 @@ componentStatement
       RBRACE RPAREN                                          #componentRule
     ;
 
+
+
 typeDefine
     : COLON type=ID (LBRACKET RBRACKET)?                     #typeDefineRule
+    ;
+
+typeDeclaration
+    : TYPE name=ID ASSIGN typeValue=typeDeclarationValue     #typeDeclarationRule
+    ;
+
+typeDeclarationValue
+    : type=ID (LBRACKET RBRACKET)?                          #typeSimple
+    | obj=typeObject                                        #typeObjectAssign
+    ;
+
+typeObject
+    : LBRACE typeMembers+=typeMember (typeMembers+=typeMember)* RBRACE #typeObjectRule
+    ;
+
+typeMember
+    : name=ID COLON type=typeDeclarationValue               #typeMemberRule
     ;
 
 asType
@@ -124,6 +144,9 @@ asType
 value
     : left=value op=binaryOp right=value                     #binaryValue
     | pv=primaryValue (qm=(QMARK|EMARK))? type=asType?       #primaryValueExpr
+    | left=value DOT right=value                             #propertyAccessValue
+    | left=value LPAREN args+=value (COMMA args+=value)* RPAREN #methodCallValue
+    | params+=ID (COMMA params+=ID)* ARROW body=value        #arrowFunctionValue
     ;
 
 primaryValue
@@ -138,6 +161,7 @@ primaryValue
     | body=functionBody                                      #functionValue
     | inc=increase_variable                                  #incValue
     | dec=decrease_variable                                  #decValue
+    | EMARK right=value                                      #negationValue
     | bt=(BACKTICK|BACKTICK_HTML) content+=html* (BACKTICK|BACKTICK_HTML) #templateValue
     ;
 
@@ -153,16 +177,10 @@ binaryOp
     | PLUS
     | MINUS
     | MULT
-    | DIVID
+    | SLASH
     ;
 
-operatorExpression
-    : DOT val=value
-    | comp=comparison
-    | DOUBLE_QMARK val=value
-    | OR val=value
-    | AND val=value
-    ;
+
 
 increase_variable
     : id=ID PLUSPLUS
@@ -175,11 +193,11 @@ decrease_variable
     ;
 
 comparison
-    : DOUBLE_ASSIGN_ID   right=primaryValue   #idEqComparison
-    | DOUBLE_ASSIGN      right=primaryValue   #eqComparison
-    | NOT_EQUAL          right=primaryValue   #neqComparison
-    | RTAG (ASSIGN|DOUBLE_ASSIGN)? right=primaryValue   #rtagComparison
-    | (LTAG|LTAG_HTML) (ASSIGN|DOUBLE_ASSIGN)? right=primaryValue  #ltagComparison
+    : DOUBLE_ASSIGN_ID   right=value   #idEqComparison
+    | DOUBLE_ASSIGN      right=value   #eqComparison
+    | NOT_EQUAL          right=value   #neqComparison
+    | RTAG (ASSIGN|DOUBLE_ASSIGN)? right=value   #rtagComparison
+    | (LTAG|LTAG_HTML) (ASSIGN|DOUBLE_ASSIGN)? right=value  #ltagComparison
     ;
 
 
@@ -192,7 +210,7 @@ pair
     ;
 
 array
-    : LBRACKET elems+=value (COMMA elems+=value)*? RBRACKET   #arrayRule
+    : LBRACKET (elems+=value (COMMA elems+=value)*)? RBRACKET   #arrayRule
     ;
 
 arrayAccess
@@ -213,7 +231,27 @@ htmlElementName
     ;
 
 open_tag
-    : (LTAG|LTAG_HTML) name=htmlElementName RTAG              #openTagRule
+    : (LTAG|LTAG_HTML) name=htmlElementName attributes* RTAG              #openTagRule
+    ;
+
+attributes
+    : attribute+
+    ;
+
+attribute
+    : NG_FOR ASSIGN BACKTICK LET varName=ID OF collection=ID BACKTICK                #ngForAttributeRule
+    | NG_IF ASSIGN BACKTICK condition=value BACKTICK                                 #ngIfAttributeRule
+    | name=ID ASSIGN val=attributeValue                                               #regularAttribute
+    ;
+
+attributeValue
+    : STRING
+    | interpolation
+    ;
+
+interpolation
+    : LBRACE_HTML expr=value RBRACE_HTML                           #simpleInterpolation
+    | LBRACE_HTML LBRACE_HTML nested+=html* RBRACE_HTML RBRACE_HTML #nestedTemplateInterpolation
     ;
 
 close_tag

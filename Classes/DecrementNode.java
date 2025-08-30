@@ -1,6 +1,6 @@
 package Classes;
 
-public class DecrementNode extends ASTNode {
+public class DecrementNode extends PrimaryValueNode {
     private String varName;
     private boolean isPrefix;
 
@@ -15,6 +15,10 @@ public class DecrementNode extends ASTNode {
 
     public boolean isPrefix() {
         return isPrefix;
+    }
+
+    public String getOperand() {
+        return varName;
     }
 
     @Override

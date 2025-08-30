@@ -17,6 +17,10 @@ public class ArrayAccessNode extends PrimaryValueNode {
         return index;
     }
 
+    public String getArray() {
+        return arrayName;
+    }
+
     @Override
     public String toString() {
         return "\nArrayAccessNode{" +

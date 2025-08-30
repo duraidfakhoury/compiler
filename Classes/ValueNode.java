@@ -16,6 +16,10 @@ public class ValueNode extends ASTNode {
         return primaryValue;
     }
 
+    public void setPrimaryValue(PrimaryValueNode primaryValue) {
+        this.primaryValue = primaryValue;
+    }
+
     public String getModifier() {
         return modifier;
     }

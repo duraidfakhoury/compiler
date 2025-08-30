@@ -1,5 +1,7 @@
 lexer grammar MyLexer;
 
+NG_FOR: '*ngFor';
+NG_IF: '*ngIf';
 IMPORT: 'import';
 CLASS: 'class';
 CONST: 'const';
@@ -20,6 +22,8 @@ SELECTOR: 'selector';
 COMPONENT: '@component';
 TEMPLATE: 'template';
 AS: 'as';
+TYPE: 'type';
+OF: 'of';
 
 fragment ESC
     : '\\'[nt"]
@@ -32,7 +36,6 @@ ASSIGN: '=';
 PLUS:'+';
 MINUS:'-';
 MULT:'*';
-DIVID:'/';
 DOUBLE_ASSIGN: '==';
 NOT_EQUAL: '!==';
 DOUBLE_ASSIGN_ID: '===';
@@ -83,4 +86,3 @@ A: 'a';
 IMG: 'img';
 INPUT: 'input';
 FORM: 'form';
-// ... أضف ما تريد من

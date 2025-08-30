@@ -1,0 +1,78 @@
+@component({
+    selector: "my-button",
+    template: `
+        <div className="productHeader">
+            <h2 className="title">Available Products</h2>
+            <div className="productList">
+                {{this.products.map(product => `
+                    <div className="productCard">
+                        <h3>{{product.name}}</h3>
+                        <p className="price">{{product.price}}</p>
+                    </div>
+                `).join("")}}
+            </div>
+        </div>
+    `,
+    products: [
+        { name: "Apple iPhone 15", price: 999 },
+        { name: "Samsung Galaxy S23", price: 899 },
+        { name: "Google Pixel 8", price: 799 },
+        { name: "OnePlus 11", price: 749 },
+        { name: "Xiaomi 13 Pro", price: 699 },
+        { name: "Sony Xperia 1 V", price: 1099 }
+    ]
+})
+export class MyButton {
+}
+
+<style>
+    .productHeader {
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        max-width: 800px;
+        margin: 2rem auto;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .title {
+        text-align: center;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #333;
+    }
+
+    .productList {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .productCard {
+        background: white;
+        padding: 1rem;
+        border-radius: 10px;
+        text-align: center;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid #eee;
+    }
+
+    .productCard:hover {
+       transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    h3 {
+        margin: 0.5rem 0;
+        font-size: 1.2rem;
+        color: #444;
+    }
+
+    .price {
+        font-size: 1rem;
+        font-weight: bold;
+        color: #2a9d8f;
+    }
+</style>

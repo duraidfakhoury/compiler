@@ -6,7 +6,7 @@ import java.util.List;
 public class HtmlNode extends ASTNode {
 
     public enum HtmlType {
-        ELEMENT, SELF_CLOSING, TEXT, EMBEDDED_STATEMENTS
+        ELEMENT, SELF_CLOSING, TEXT, EMBEDDED_STATEMENTS, STYLE
     }
 
     private HtmlType type;

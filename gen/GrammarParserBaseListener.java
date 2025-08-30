@@ -1,4 +1,4 @@
-// Generated from C:/Users/durai/Downloads/Telegram Desktop/compilerV4/compilerV4/GrammarParser.g4 by ANTLR 4.13.2
+// Generated from D:/Projects/compiler/GrammarParser.g4 by ANTLR 4.13.2
 package gen;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -180,6 +180,18 @@ public class GrammarParserBaseListener implements GrammarParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitStmtExport(GrammarParser.StmtExportContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterStmtTypeDecl(GrammarParser.StmtTypeDeclContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitStmtTypeDecl(GrammarParser.StmtTypeDeclContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -497,6 +509,66 @@ public class GrammarParserBaseListener implements GrammarParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterTypeDeclarationRule(GrammarParser.TypeDeclarationRuleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitTypeDeclarationRule(GrammarParser.TypeDeclarationRuleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterTypeSimple(GrammarParser.TypeSimpleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitTypeSimple(GrammarParser.TypeSimpleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterTypeObjectAssign(GrammarParser.TypeObjectAssignContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitTypeObjectAssign(GrammarParser.TypeObjectAssignContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterTypeObjectRule(GrammarParser.TypeObjectRuleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitTypeObjectRule(GrammarParser.TypeObjectRuleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterTypeMemberRule(GrammarParser.TypeMemberRuleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitTypeMemberRule(GrammarParser.TypeMemberRuleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterAsTypeRule(GrammarParser.AsTypeRuleContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -509,6 +581,30 @@ public class GrammarParserBaseListener implements GrammarParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterMethodCallValue(GrammarParser.MethodCallValueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitMethodCallValue(GrammarParser.MethodCallValueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterPropertyAccessValue(GrammarParser.PropertyAccessValueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPropertyAccessValue(GrammarParser.PropertyAccessValueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterPrimaryValueExpr(GrammarParser.PrimaryValueExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -516,6 +612,18 @@ public class GrammarParserBaseListener implements GrammarParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitPrimaryValueExpr(GrammarParser.PrimaryValueExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterArrowFunctionValue(GrammarParser.ArrowFunctionValueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitArrowFunctionValue(GrammarParser.ArrowFunctionValueContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -665,6 +773,18 @@ public class GrammarParserBaseListener implements GrammarParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterNegationValue(GrammarParser.NegationValueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitNegationValue(GrammarParser.NegationValueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterTemplateValue(GrammarParser.TemplateValueContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -684,18 +804,6 @@ public class GrammarParserBaseListener implements GrammarParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitBinaryOp(GrammarParser.BinaryOpContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterOperatorExpression(GrammarParser.OperatorExpressionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitOperatorExpression(GrammarParser.OperatorExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -857,6 +965,90 @@ public class GrammarParserBaseListener implements GrammarParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterAttributes(GrammarParser.AttributesContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAttributes(GrammarParser.AttributesContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterNgForAttributeRule(GrammarParser.NgForAttributeRuleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitNgForAttributeRule(GrammarParser.NgForAttributeRuleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterNgIfAttributeRule(GrammarParser.NgIfAttributeRuleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitNgIfAttributeRule(GrammarParser.NgIfAttributeRuleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterRegularAttribute(GrammarParser.RegularAttributeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitRegularAttribute(GrammarParser.RegularAttributeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAttributeValue(GrammarParser.AttributeValueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAttributeValue(GrammarParser.AttributeValueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSimpleInterpolation(GrammarParser.SimpleInterpolationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSimpleInterpolation(GrammarParser.SimpleInterpolationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterNestedTemplateInterpolation(GrammarParser.NestedTemplateInterpolationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitNestedTemplateInterpolation(GrammarParser.NestedTemplateInterpolationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterCloseTagRule(GrammarParser.CloseTagRuleContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -924,6 +1116,42 @@ public class GrammarParserBaseListener implements GrammarParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitHtmlText(GrammarParser.HtmlTextContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCssBrace(GrammarParser.CssBraceContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCssBrace(GrammarParser.CssBraceContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCssLeftBrace(GrammarParser.CssLeftBraceContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCssLeftBrace(GrammarParser.CssLeftBraceContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCssRightBrace(GrammarParser.CssRightBraceContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCssRightBrace(GrammarParser.CssRightBraceContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

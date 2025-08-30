@@ -1,4 +1,4 @@
-// Generated from C:/Users/durai/Downloads/Telegram Desktop/compilerV4/compilerV4/GrammarParser.g4 by ANTLR 4.13.2
+// Generated from D:/Projects/compiler/GrammarParser.g4 by ANTLR 4.13.2
 package gen;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -175,6 +175,18 @@ public interface GrammarParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitStmtExport(GrammarParser.StmtExportContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code stmtTypeDecl}
+	 * labeled alternative in {@link GrammarParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterStmtTypeDecl(GrammarParser.StmtTypeDeclContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code stmtTypeDecl}
+	 * labeled alternative in {@link GrammarParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitStmtTypeDecl(GrammarParser.StmtTypeDeclContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code returnRule}
 	 * labeled alternative in {@link GrammarParser#return}.
@@ -488,6 +500,66 @@ public interface GrammarParserListener extends ParseTreeListener {
 	 */
 	void exitTypeDefineRule(GrammarParser.TypeDefineRuleContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code typeDeclarationRule}
+	 * labeled alternative in {@link GrammarParser#typeDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterTypeDeclarationRule(GrammarParser.TypeDeclarationRuleContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code typeDeclarationRule}
+	 * labeled alternative in {@link GrammarParser#typeDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitTypeDeclarationRule(GrammarParser.TypeDeclarationRuleContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code typeSimple}
+	 * labeled alternative in {@link GrammarParser#typeDeclarationValue}.
+	 * @param ctx the parse tree
+	 */
+	void enterTypeSimple(GrammarParser.TypeSimpleContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code typeSimple}
+	 * labeled alternative in {@link GrammarParser#typeDeclarationValue}.
+	 * @param ctx the parse tree
+	 */
+	void exitTypeSimple(GrammarParser.TypeSimpleContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code typeObjectAssign}
+	 * labeled alternative in {@link GrammarParser#typeDeclarationValue}.
+	 * @param ctx the parse tree
+	 */
+	void enterTypeObjectAssign(GrammarParser.TypeObjectAssignContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code typeObjectAssign}
+	 * labeled alternative in {@link GrammarParser#typeDeclarationValue}.
+	 * @param ctx the parse tree
+	 */
+	void exitTypeObjectAssign(GrammarParser.TypeObjectAssignContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code typeObjectRule}
+	 * labeled alternative in {@link GrammarParser#typeObject}.
+	 * @param ctx the parse tree
+	 */
+	void enterTypeObjectRule(GrammarParser.TypeObjectRuleContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code typeObjectRule}
+	 * labeled alternative in {@link GrammarParser#typeObject}.
+	 * @param ctx the parse tree
+	 */
+	void exitTypeObjectRule(GrammarParser.TypeObjectRuleContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code typeMemberRule}
+	 * labeled alternative in {@link GrammarParser#typeMember}.
+	 * @param ctx the parse tree
+	 */
+	void enterTypeMemberRule(GrammarParser.TypeMemberRuleContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code typeMemberRule}
+	 * labeled alternative in {@link GrammarParser#typeMember}.
+	 * @param ctx the parse tree
+	 */
+	void exitTypeMemberRule(GrammarParser.TypeMemberRuleContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code asTypeRule}
 	 * labeled alternative in {@link GrammarParser#asType}.
 	 * @param ctx the parse tree
@@ -500,6 +572,30 @@ public interface GrammarParserListener extends ParseTreeListener {
 	 */
 	void exitAsTypeRule(GrammarParser.AsTypeRuleContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code methodCallValue}
+	 * labeled alternative in {@link GrammarParser#value}.
+	 * @param ctx the parse tree
+	 */
+	void enterMethodCallValue(GrammarParser.MethodCallValueContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code methodCallValue}
+	 * labeled alternative in {@link GrammarParser#value}.
+	 * @param ctx the parse tree
+	 */
+	void exitMethodCallValue(GrammarParser.MethodCallValueContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code propertyAccessValue}
+	 * labeled alternative in {@link GrammarParser#value}.
+	 * @param ctx the parse tree
+	 */
+	void enterPropertyAccessValue(GrammarParser.PropertyAccessValueContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code propertyAccessValue}
+	 * labeled alternative in {@link GrammarParser#value}.
+	 * @param ctx the parse tree
+	 */
+	void exitPropertyAccessValue(GrammarParser.PropertyAccessValueContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code primaryValueExpr}
 	 * labeled alternative in {@link GrammarParser#value}.
 	 * @param ctx the parse tree
@@ -511,6 +607,18 @@ public interface GrammarParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitPrimaryValueExpr(GrammarParser.PrimaryValueExprContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code arrowFunctionValue}
+	 * labeled alternative in {@link GrammarParser#value}.
+	 * @param ctx the parse tree
+	 */
+	void enterArrowFunctionValue(GrammarParser.ArrowFunctionValueContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code arrowFunctionValue}
+	 * labeled alternative in {@link GrammarParser#value}.
+	 * @param ctx the parse tree
+	 */
+	void exitArrowFunctionValue(GrammarParser.ArrowFunctionValueContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code binaryValue}
 	 * labeled alternative in {@link GrammarParser#value}.
@@ -656,6 +764,18 @@ public interface GrammarParserListener extends ParseTreeListener {
 	 */
 	void exitDecValue(GrammarParser.DecValueContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code negationValue}
+	 * labeled alternative in {@link GrammarParser#primaryValue}.
+	 * @param ctx the parse tree
+	 */
+	void enterNegationValue(GrammarParser.NegationValueContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code negationValue}
+	 * labeled alternative in {@link GrammarParser#primaryValue}.
+	 * @param ctx the parse tree
+	 */
+	void exitNegationValue(GrammarParser.NegationValueContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code templateValue}
 	 * labeled alternative in {@link GrammarParser#primaryValue}.
 	 * @param ctx the parse tree
@@ -677,16 +797,6 @@ public interface GrammarParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitBinaryOp(GrammarParser.BinaryOpContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link GrammarParser#operatorExpression}.
-	 * @param ctx the parse tree
-	 */
-	void enterOperatorExpression(GrammarParser.OperatorExpressionContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link GrammarParser#operatorExpression}.
-	 * @param ctx the parse tree
-	 */
-	void exitOperatorExpression(GrammarParser.OperatorExpressionContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link GrammarParser#increase_variable}.
 	 * @param ctx the parse tree
@@ -838,6 +948,86 @@ public interface GrammarParserListener extends ParseTreeListener {
 	 */
 	void exitOpenTagRule(GrammarParser.OpenTagRuleContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link GrammarParser#attributes}.
+	 * @param ctx the parse tree
+	 */
+	void enterAttributes(GrammarParser.AttributesContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GrammarParser#attributes}.
+	 * @param ctx the parse tree
+	 */
+	void exitAttributes(GrammarParser.AttributesContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code ngForAttributeRule}
+	 * labeled alternative in {@link GrammarParser#attribute}.
+	 * @param ctx the parse tree
+	 */
+	void enterNgForAttributeRule(GrammarParser.NgForAttributeRuleContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code ngForAttributeRule}
+	 * labeled alternative in {@link GrammarParser#attribute}.
+	 * @param ctx the parse tree
+	 */
+	void exitNgForAttributeRule(GrammarParser.NgForAttributeRuleContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code ngIfAttributeRule}
+	 * labeled alternative in {@link GrammarParser#attribute}.
+	 * @param ctx the parse tree
+	 */
+	void enterNgIfAttributeRule(GrammarParser.NgIfAttributeRuleContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code ngIfAttributeRule}
+	 * labeled alternative in {@link GrammarParser#attribute}.
+	 * @param ctx the parse tree
+	 */
+	void exitNgIfAttributeRule(GrammarParser.NgIfAttributeRuleContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code regularAttribute}
+	 * labeled alternative in {@link GrammarParser#attribute}.
+	 * @param ctx the parse tree
+	 */
+	void enterRegularAttribute(GrammarParser.RegularAttributeContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code regularAttribute}
+	 * labeled alternative in {@link GrammarParser#attribute}.
+	 * @param ctx the parse tree
+	 */
+	void exitRegularAttribute(GrammarParser.RegularAttributeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GrammarParser#attributeValue}.
+	 * @param ctx the parse tree
+	 */
+	void enterAttributeValue(GrammarParser.AttributeValueContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GrammarParser#attributeValue}.
+	 * @param ctx the parse tree
+	 */
+	void exitAttributeValue(GrammarParser.AttributeValueContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code simpleInterpolation}
+	 * labeled alternative in {@link GrammarParser#interpolation}.
+	 * @param ctx the parse tree
+	 */
+	void enterSimpleInterpolation(GrammarParser.SimpleInterpolationContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code simpleInterpolation}
+	 * labeled alternative in {@link GrammarParser#interpolation}.
+	 * @param ctx the parse tree
+	 */
+	void exitSimpleInterpolation(GrammarParser.SimpleInterpolationContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code nestedTemplateInterpolation}
+	 * labeled alternative in {@link GrammarParser#interpolation}.
+	 * @param ctx the parse tree
+	 */
+	void enterNestedTemplateInterpolation(GrammarParser.NestedTemplateInterpolationContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code nestedTemplateInterpolation}
+	 * labeled alternative in {@link GrammarParser#interpolation}.
+	 * @param ctx the parse tree
+	 */
+	void exitNestedTemplateInterpolation(GrammarParser.NestedTemplateInterpolationContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code closeTagRule}
 	 * labeled alternative in {@link GrammarParser#close_tag}.
 	 * @param ctx the parse tree
@@ -909,4 +1099,40 @@ public interface GrammarParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitHtmlText(GrammarParser.HtmlTextContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code cssBrace}
+	 * labeled alternative in {@link GrammarParser#html}.
+	 * @param ctx the parse tree
+	 */
+	void enterCssBrace(GrammarParser.CssBraceContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code cssBrace}
+	 * labeled alternative in {@link GrammarParser#html}.
+	 * @param ctx the parse tree
+	 */
+	void exitCssBrace(GrammarParser.CssBraceContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code cssLeftBrace}
+	 * labeled alternative in {@link GrammarParser#css_brace}.
+	 * @param ctx the parse tree
+	 */
+	void enterCssLeftBrace(GrammarParser.CssLeftBraceContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code cssLeftBrace}
+	 * labeled alternative in {@link GrammarParser#css_brace}.
+	 * @param ctx the parse tree
+	 */
+	void exitCssLeftBrace(GrammarParser.CssLeftBraceContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code cssRightBrace}
+	 * labeled alternative in {@link GrammarParser#css_brace}.
+	 * @param ctx the parse tree
+	 */
+	void enterCssRightBrace(GrammarParser.CssRightBraceContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code cssRightBrace}
+	 * labeled alternative in {@link GrammarParser#css_brace}.
+	 * @param ctx the parse tree
+	 */
+	void exitCssRightBrace(GrammarParser.CssRightBraceContext ctx);
 }

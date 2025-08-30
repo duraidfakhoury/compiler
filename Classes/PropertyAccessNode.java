@@ -1,6 +1,6 @@
 package Classes;
 
-public class PropertyAccessNode extends ASTNode {
+public class PropertyAccessNode extends PrimaryValueNode {
     private ASTNode object;   // الكائن الذي تحتويه الخاصية
     private ASTNode property; // الخاصية نفسها
 
@@ -11,6 +11,10 @@ public class PropertyAccessNode extends ASTNode {
 
     public ASTNode getObject() {
         return object;
+    }
+    
+    public ASTNode getBase() {
+        return object; // Alias for getObject() for compatibility
     }
 
     public ASTNode getProperty() {

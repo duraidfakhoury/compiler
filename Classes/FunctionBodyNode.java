@@ -3,7 +3,7 @@ package Classes;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FunctionBodyNode extends ASTNode {
+public class FunctionBodyNode extends PrimaryValueNode {
     private boolean blockStyle; // true = {} block, false = arrow
     private List<ASTNode> statements = new ArrayList<>(); // for block
     private List<String> params = new ArrayList<>(); // for arrow
@@ -28,6 +28,26 @@ public class FunctionBodyNode extends ASTNode {
 
     public void setReturnType(TypeDefineNode returnType) {
         this.returnType = returnType;
+    }
+    
+    public TypeDefineNode getReturnType() {
+        return returnType;
+    }
+    
+    public List<ASTNode> getStatements() {
+        return statements;
+    }
+    
+    public List<String> getParams() {
+        return params;
+    }
+    
+    public ValueNode getArrowValue() {
+        return arrowValue;
+    }
+    
+    public boolean isBlockStyle() {
+        return blockStyle;
     }
 
     @Override

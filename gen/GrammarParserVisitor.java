@@ -1,4 +1,4 @@
-// Generated from C:/Users/durai/Downloads/Telegram Desktop/compilerV4/compilerV4/GrammarParser.g4 by ANTLR 4.13.2
+// Generated from D:/Projects/compiler/GrammarParser.g4 by ANTLR 4.13.2
 package gen;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -108,6 +108,13 @@ public interface GrammarParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitStmtExport(GrammarParser.StmtExportContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code stmtTypeDecl}
+	 * labeled alternative in {@link GrammarParser#statement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStmtTypeDecl(GrammarParser.StmtTypeDeclContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code returnRule}
 	 * labeled alternative in {@link GrammarParser#return}.
@@ -291,6 +298,41 @@ public interface GrammarParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitTypeDefineRule(GrammarParser.TypeDefineRuleContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code typeDeclarationRule}
+	 * labeled alternative in {@link GrammarParser#typeDeclaration}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTypeDeclarationRule(GrammarParser.TypeDeclarationRuleContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code typeSimple}
+	 * labeled alternative in {@link GrammarParser#typeDeclarationValue}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTypeSimple(GrammarParser.TypeSimpleContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code typeObjectAssign}
+	 * labeled alternative in {@link GrammarParser#typeDeclarationValue}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTypeObjectAssign(GrammarParser.TypeObjectAssignContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code typeObjectRule}
+	 * labeled alternative in {@link GrammarParser#typeObject}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTypeObjectRule(GrammarParser.TypeObjectRuleContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code typeMemberRule}
+	 * labeled alternative in {@link GrammarParser#typeMember}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTypeMemberRule(GrammarParser.TypeMemberRuleContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code asTypeRule}
 	 * labeled alternative in {@link GrammarParser#asType}.
 	 * @param ctx the parse tree
@@ -298,12 +340,33 @@ public interface GrammarParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitAsTypeRule(GrammarParser.AsTypeRuleContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code methodCallValue}
+	 * labeled alternative in {@link GrammarParser#value}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMethodCallValue(GrammarParser.MethodCallValueContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code propertyAccessValue}
+	 * labeled alternative in {@link GrammarParser#value}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPropertyAccessValue(GrammarParser.PropertyAccessValueContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code primaryValueExpr}
 	 * labeled alternative in {@link GrammarParser#value}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitPrimaryValueExpr(GrammarParser.PrimaryValueExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code arrowFunctionValue}
+	 * labeled alternative in {@link GrammarParser#value}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArrowFunctionValue(GrammarParser.ArrowFunctionValueContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code binaryValue}
 	 * labeled alternative in {@link GrammarParser#value}.
@@ -389,6 +452,13 @@ public interface GrammarParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitDecValue(GrammarParser.DecValueContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code negationValue}
+	 * labeled alternative in {@link GrammarParser#primaryValue}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNegationValue(GrammarParser.NegationValueContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code templateValue}
 	 * labeled alternative in {@link GrammarParser#primaryValue}.
 	 * @param ctx the parse tree
@@ -401,12 +471,6 @@ public interface GrammarParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitBinaryOp(GrammarParser.BinaryOpContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link GrammarParser#operatorExpression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitOperatorExpression(GrammarParser.OperatorExpressionContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link GrammarParser#increase_variable}.
 	 * @param ctx the parse tree
@@ -496,6 +560,53 @@ public interface GrammarParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitOpenTagRule(GrammarParser.OpenTagRuleContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link GrammarParser#attributes}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAttributes(GrammarParser.AttributesContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code ngForAttributeRule}
+	 * labeled alternative in {@link GrammarParser#attribute}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNgForAttributeRule(GrammarParser.NgForAttributeRuleContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code ngIfAttributeRule}
+	 * labeled alternative in {@link GrammarParser#attribute}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNgIfAttributeRule(GrammarParser.NgIfAttributeRuleContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code regularAttribute}
+	 * labeled alternative in {@link GrammarParser#attribute}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitRegularAttribute(GrammarParser.RegularAttributeContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GrammarParser#attributeValue}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAttributeValue(GrammarParser.AttributeValueContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code simpleInterpolation}
+	 * labeled alternative in {@link GrammarParser#interpolation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSimpleInterpolation(GrammarParser.SimpleInterpolationContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code nestedTemplateInterpolation}
+	 * labeled alternative in {@link GrammarParser#interpolation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNestedTemplateInterpolation(GrammarParser.NestedTemplateInterpolationContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code closeTagRule}
 	 * labeled alternative in {@link GrammarParser#close_tag}.
 	 * @param ctx the parse tree
@@ -537,4 +648,25 @@ public interface GrammarParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitHtmlText(GrammarParser.HtmlTextContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code cssBrace}
+	 * labeled alternative in {@link GrammarParser#html}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCssBrace(GrammarParser.CssBraceContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code cssLeftBrace}
+	 * labeled alternative in {@link GrammarParser#css_brace}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCssLeftBrace(GrammarParser.CssLeftBraceContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code cssRightBrace}
+	 * labeled alternative in {@link GrammarParser#css_brace}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCssRightBrace(GrammarParser.CssRightBraceContext ctx);
 }

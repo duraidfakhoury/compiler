@@ -1,0 +1,105 @@
+@component({
+    selector: "product-list",
+    template: `
+        <div className="product-list">
+            <h2>Products</h2>
+
+            <div *ngFor=`let product of products` className="product-item">
+                <h3>{{product.name}}</h3>
+                <p>Price: {{product.price}}</p>
+                <p *ngIf=`product.inStock`>In Stock</p>
+            </div>
+
+            <div *ngIf=`!this.products.length` className="empty-message">
+                <p>No products available</p>
+            </div>
+
+            <button *ngIf=`isAdmin`>Add Product</button>
+        </div>
+    `,
+    products: []
+})
+
+<style>
+    .product-list {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      font-family: "Segoe UI", Roboto, sans-serif;
+      color: #333;
+    }
+
+    .product-list h2 {
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      color: #222;
+      border-bottom: 2px solid #eee;
+      padding-bottom: .5rem;
+    }
+
+    .product-item {
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+      border-radius: 12px;
+      background: #f9f9f9;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .product-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    }
+
+    .product-item h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.2rem;
+      color: #0078d4;
+    }
+
+    .product-item p {
+      margin: 0.3rem 0;
+      font-size: 0.95rem;
+    }
+
+    .product-item p:first-of-type {
+      font-weight: bold;
+    }
+
+    .product-item p:last-of-type {
+      color: #28a745; /* in-stock green */
+      font-weight: 500;
+    }
+
+    .empty-message {
+      text-align: center;
+      padding: 1.5rem;
+      margin-top: 2rem;
+      border: 2px dashed #ccc;
+      border-radius: 12px;
+      background: #fafafa;
+      font-style: italic;
+    }
+
+    button {
+      display: block;
+      margin: 2rem auto 0;
+      padding: 0.8rem 1.6rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      background: #0078d4;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .2s ease, transform .2s ease;
+    }
+
+    button:hover {
+      background: #005fa3;
+      transform: translateY(-2px);
+    }
+</style>

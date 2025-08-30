@@ -23,6 +23,14 @@ public class IncDecNode extends PrimaryValueNode {
         return isPrefix;
     }
 
+    public String getOperand() {
+        return variableName;
+    }
+
+    public boolean isIncrement() {
+        return "++".equals(operator);
+    }
+
     @Override
     public String toString() {
         return "\nIncDecNode{" +

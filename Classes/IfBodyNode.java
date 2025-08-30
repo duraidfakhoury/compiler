@@ -15,6 +15,14 @@ public class IfBodyNode extends ASTNode {
         statements.add(stmt);
     }
 
+    public ValueNode getCondition() {
+        return condition;
+    }
+
+    public List<ASTNode> getStatements() {
+        return statements;
+    }
+
     @Override
     public String toString() {
         return "\nIfBodyNode{condition=" + condition + ", statements=" + statements + "}";

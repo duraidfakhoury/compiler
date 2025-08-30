@@ -6,13 +6,13 @@ public class SymbolTable {
     private Map<String, List<Symbol>> symbols; // Changed to Map<String, List<Symbol>>
     private Stack<String> scopeStack;
     private int scopeCounter;
-    private List<String> semanticErrors;
+    private List<CompilerError> errors;
 
     public SymbolTable() {
         this.symbols = new HashMap<>(); // Initialize as HashMap
         this.scopeStack = new Stack<>();
         this.scopeCounter = 0;
-        this.semanticErrors = new ArrayList<>();
+        this.errors = new ArrayList<>();
         enterScope("global");
     }
 
@@ -135,7 +135,30 @@ public class SymbolTable {
         return true;
     }
 
+    public boolean declareSymbolInScope(String name, String type, String kind, int line, int column, String scope) {
+        // Make sure the scope exists in the map
+        if (!symbols.containsKey(scope)) {
+            symbols.put(scope, new ArrayList<>());
+        }
+
+        List<Symbol> scopeSymbols = symbols.get(scope);
+
+        // Check for duplicate declaration in the specified scope
+        for (Symbol symbol : scopeSymbols) {
+            if (symbol.getName().equals(name)) {
+                addSemanticError("Duplicate declaration of '" + name + "' at line " + line +
+                        ". Previously declared at line " + symbol.getLine());
+                return false;
+            }
+        }
+
+        Symbol symbol = new Symbol(name, type, kind, line, column, scope);
+        scopeSymbols.add(symbol);
+        return true;
+    }
+
     public Symbol lookupSymbol(String name) {
+        // Always search from current scope up to global scope
         for (int i = scopeStack.size() - 1; i >= 0; i--) {
             String scope = scopeStack.get(i);
             List<Symbol> scopeSymbols = symbols.get(scope);
@@ -147,30 +170,118 @@ public class SymbolTable {
                 }
             }
         }
+        
+        // Also explicitly search in global scope to ensure we don't miss anything
+        List<Symbol> globalSymbols = symbols.get("global");
+        if (globalSymbols != null) {
+            for (Symbol symbol : globalSymbols) {
+                if (symbol.getName().equals(name)) {
+                    return symbol;
+                }
+            }
+        }
+        
         return null;
     }
 
-    public void addSemanticError(String error) {
-        semanticErrors.add(error);
+    /**
+     * Returns a list of all symbols in the symbol table, across all scopes.
+     */
+    public List<Symbol> getAllSymbols() {
+        List<Symbol> all = new ArrayList<>();
+        for (List<Symbol> scopeSymbols : symbols.values()) {
+            all.addAll(scopeSymbols);
+        }
+        return all;
     }
 
-    public List<String> getSemanticErrors() {
-        return semanticErrors;
+    /**
+     * Checks if a symbol with the given name is declared in the current scope.
+     */
+    public boolean isDeclaredInCurrentScope(String name) {
+        String currentScope = getCurrentScope();
+        List<Symbol> scopeSymbols = symbols.get(currentScope);
+        if (scopeSymbols != null) {
+            for (Symbol symbol : scopeSymbols) {
+                if (symbol.getName().equals(name)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void addError(CompilerError error) {
+        errors.add(error);
+    }
+
+    public void addSemanticError(String message) {
+        // For backward compatibility, create a SemanticError without line/column
+        errors.add(new SemanticError(message, 0, 0));
+    }
+
+    public void addSemanticError(String message, int line, int column) {
+        errors.add(new SemanticError(message, line, column));
+    }
+
+    public void addControlFlowError(String message, int line, int column) {
+        // Treat control-flow issues as warnings by default
+        errors.add(new ControlFlowError(message, line, column, CompilerError.ErrorSeverity.WARNING));
+    }
+
+    public void addTypeError(String message, int line, int column) {
+        errors.add(new TypeError(message, line, column));
+    }
+
+    public List<CompilerError> getErrors() {
+        return errors;
+    }
+
+    public List<CompilerError> getErrorsByType(CompilerError.ErrorType type) {
+        List<CompilerError> filteredErrors = new ArrayList<>();
+        for (CompilerError error : errors) {
+            if (error.getType() == type) {
+                filteredErrors.add(error);
+            }
+        }
+        return filteredErrors;
     }
 
     public boolean hasErrors() {
-        return !semanticErrors.isEmpty();
+        return !errors.isEmpty();
+    }
+
+    public boolean hasErrorsByType(CompilerError.ErrorType type) {
+        for (CompilerError error : errors) {
+            if (error.getType() == type) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void printErrors() {
         if (hasErrors()) {
-            System.out.println("\nSEMANTIC ERRORS FOUND:");
+            System.out.println("\nCOMPILER ERRORS FOUND:");
             System.out.println(repeatString("=", 50));
-            for (int i = 0; i < semanticErrors.size(); i++) {
-                System.out.println((i + 1) + ". " + semanticErrors.get(i));
+            
+            // Group errors by type
+            Map<CompilerError.ErrorType, List<CompilerError>> errorsByType = new HashMap<>();
+            for (CompilerError error : errors) {
+                errorsByType.computeIfAbsent(error.getType(), k -> new ArrayList<>()).add(error);
+            }
+            
+            int errorCount = 1;
+            for (CompilerError.ErrorType type : errorsByType.keySet()) {
+                List<CompilerError> typeErrors = errorsByType.get(type);
+                System.out.println("\n" + type.toString().toUpperCase() + " ERRORS:");
+                for (CompilerError error : typeErrors) {
+                    System.out.println(errorCount++ + ". " + error.getMessage() + 
+                        (error.getLine() > 0 ? " at line " + error.getLine() : ""));
+                }
             }
         } else {
-            System.out.println("\nNo semantic errors found.");
+            System.out.println("\nNo compiler errors found.");
         }
     }
 
@@ -229,5 +340,19 @@ public class SymbolTable {
             sb.append(str);
         }
         return sb.toString();
+    }
+    
+    /**
+     * Get all scopes in the symbol table
+     */
+    public Set<String> getAllScopes() {
+        return new HashSet<>(symbols.keySet());
+    }
+    
+    /**
+     * Get all symbols in a specific scope
+     */
+    public List<Symbol> getSymbolsInScope(String scope) {
+        return symbols.get(scope);
     }
 }

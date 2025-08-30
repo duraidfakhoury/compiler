@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Component Demo</title>
+    <script>
+        class ProductListComponent extends HTMLElement {
+            constructor() {
+                super();
+                this._products = [];
+                this.render();
+            }
+            render() {
+                // Clear existing content
+                this.innerHTML = '';
+                
+                // Create template element for parsing
+                const template = document.createElement('template');
+                template.innerHTML = `
+<div class="product-list"><h2>Products</h2><!-- ngFor directive: let product of products -->
+${this.products.map(product => `<div class="product-item"><h3>${product.name}</h3><p>Price: ${product.price}</p><!-- ngIf directive: product.inStock -->
+${product.inStock ? `<p>In Stock</p>` : ''}</div>`).join('')}<!-- ngIf directive: !this.products.length -->
+${!this.products.length ? `<div class="empty-message"><p>No products available</p></div>` : ''}<!-- ngIf directive: isAdmin -->
+${this.isAdmin ? `<button>Add Product</button>` : ''}</div>                `;
+                
+                // Unwrap: replace the custom element node with the template's children
+                const frag = template.content.cloneNode(true);
+                this.replaceWith(frag);
+                return;
+            }
+            
+            // Component properties
+            get products() {
+                return this.getAttribute('products') || this._products;
+            }
+            set products(value) {
+                if (value === null || value === undefined) {
+                    this.removeAttribute('products');
+                } else {
+                    this.setAttribute('products', value);
+                }
+                this.render();
+            }
+            connectedCallback() {
+                // Component connected to DOM
+                this.render();
+            }
+            disconnectedCallback() {
+                // Component disconnected from DOM
+                // Clean up any event listeners or timers here
+            }
+            attributeChangedCallback(name, oldValue, newValue) {
+                if (oldValue !== newValue) {
+                    this.render();
+                }
+            }
+            static get observedAttributes() {
+                return [
+                    'products',
+                ];
+            }
+        }
+        
+        // Register custom element
+        customElements.define('product-list', ProductListComponent);
+    </script>
+</head>
+<body>
+    <product-list></product-list>
+</body>
+</html>
