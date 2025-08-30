@@ -250,8 +250,8 @@ attributeValue
     ;
 
 interpolation
-    : LBRACE_HTML expr=value RBRACE_HTML                           #simpleInterpolation
-    | LBRACE_HTML LBRACE_HTML nested+=html* RBRACE_HTML RBRACE_HTML #nestedTemplateInterpolation
+    : (LBRACE_HTML | (LBRACE LBRACE)) expr=value (RBRACE_HTML | (RBRACE RBRACE))                           #simpleInterpolation
+    | (LBRACE_HTML | (LBRACE LBRACE)) LBRACE_HTML nested+=html* (RBRACE_HTML | (RBRACE RBRACE)) #nestedTemplateInterpolation
     ;
 
 close_tag

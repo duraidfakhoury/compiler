@@ -8,7 +8,7 @@
         class ProductListComponent extends HTMLElement {
             constructor() {
                 super();
-                this._products = [];
+                this._products = [{"name": "Apple iPhone 15", "price": 999, "image": "https://dummyimage.com/600x400/000/fff", "inStock": "true"}, {"name": "Samsung Galaxy S23", "price": 899, "image": "https://dummyimage.com/600x400/000/fff", "inStock": "true"}, {"name": "Google Pixel 8", "price": 799, "image": "https://dummyimage.com/600x400/000/fff", "inStock": "false"}, {"name": "OnePlus 11", "price": 749, "image": "https://dummyimage.com/600x400/000/fff", "inStock": "true"}, {"name": "Xiaomi 13 Pro", "price": 699, "image": "https://dummyimage.com/600x400/000/fff", "inStock": "false"}, {"name": "Sony Xperia 1 V", "price": 1099, "image": "https://dummyimage.com/600x400/000/fff", "inStock": "true"}];
                 this.render();
             }
             render() {
@@ -18,11 +18,12 @@
                 // Create template element for parsing
                 const template = document.createElement('template');
                 template.innerHTML = `
-<div class="product-list"><h2>Products</h2><!-- ngFor directive: let product of products -->
-${this.products.map(product => `<div class="product-item"><h3>${product.name}</h3><p>Price: ${product.price}</p><!-- ngIf directive: product.inStock -->
-${product.inStock ? `<p>In Stock</p>` : ''}</div>`).join('')}<!-- ngIf directive: !this.products.length -->
-${!this.products.length ? `<div class="empty-message"><p>No products available</p></div>` : ''}<!-- ngIf directive: isAdmin -->
-${this.isAdmin ? `<button>Add Product</button>` : ''}</div>                `;
+<div style="max-width:900px;margin:2.5rem auto;padding:2.5rem 2rem;border-radius:22px;background:linear-gradient(135deg,#f8fafc 0%,#e0e7ef 100%);box-shadow:0 8px 32px rgba(0,0,0,0.13);font-family:'Segoe UI',Roboto,sans-serif;color:#222;border:1.5px solid #e3e8ee;"><h2 style="font-size:2.2rem;margin-bottom:2rem;text-align:center;color:#1a237e;border-bottom:3px solid #e3e8ee;padding-bottom:.7rem;letter-spacing:1px;font-weight:700;background:linear-gradient(90deg,#e3e8ee 60%,#fff 100%);border-radius:8px 8px 0 0;">Products</h2><!-- ngFor directive: let product of products -->
+${this.products.map(product => `<div style="padding:1.5rem 1.2rem;margin-bottom:1.3rem;border-radius:16px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.07);transition:transform .18s,box-shadow .18s;border:1px solid #e3e8ee;display:flex;align-items:center;gap:1.5rem;position:relative;"><img src="${product.image}" style="width:120px;height:90px;object-fit:cover;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.10);border:2px solid #e3e8ee;background:#f4f6fa;margin-right:1.2rem;transition:transform .18s;" alt="{{product.name}}"></img><div style="flex:1;"><h3 style="margin:0 0 0.5rem 0;font-size:1.25rem;color:#1976d2;font-weight:600;letter-spacing:0.5px;">${product.name}</h3><p style="margin:0.3rem 0;font-size:1.05rem;font-weight:bold;color:#333;">Price: <span style="color:#388e3c;">$${product.price}</span></p><!-- ngIf directive: product.inStock -->
+${product.inStock ? `<p style="margin:0.3rem 0 0 0;font-size:1rem;color:#28a745;font-weight:500;display:inline-block;background:#e8f5e9;padding:0.2rem 0.7rem;border-radius:6px;letter-spacing:0.5px;">In Stock</p>` : ''}<!-- ngIf directive: !product.inStock -->
+${!product.inStock ? `<p style="margin:0.3rem 0 0 0;font-size:1rem;color:#c62828;font-weight:500;display:inline-block;background:#ffebee;padding:0.2rem 0.7rem;border-radius:6px;letter-spacing:0.5px;">Out of Stock</p>` : ''}</div></div>`).join('')}<!-- ngIf directive: !this.products.length -->
+${!this.products.length ? `<div style="text-align:center;padding:2rem 1.5rem;margin-top:2.5rem;border:2.5px dashed #b0bec5;border-radius:14px;background:#f5f7fa;font-style:italic;color:#607d8b;font-size:1.15rem;letter-spacing:0.5px;"><p>No products available</p></div>` : ''}<!-- ngIf directive: isAdmin -->
+${this.isAdmin ? `<button style="display:block;margin:2.5rem auto 0;padding:1rem 2.2rem;font-size:1.1rem;font-weight:700;color:#fff;background:linear-gradient(90deg,#1976d2 60%,#64b5f6 100%);border:none;border-radius:10px;cursor:pointer;box-shadow:0 2px 8px rgba(25,118,210,0.13);transition:background .18s,transform .18s;letter-spacing:1px;">Add Product</button>` : ''}</div>                `;
                 
                 // Unwrap: replace the custom element node with the template's children
                 const frag = template.content.cloneNode(true);

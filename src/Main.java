@@ -26,11 +26,8 @@ public class Main {
             CodeGenerator tempCodeGenerator = new CodeGenerator();
             String rootStyles = tempCodeGenerator.extractRootStyles(sourceCode);
             
-            // Remove CSS content from source code before parsing
-            String codeWithoutCSS = removeCSSContent(sourceCode);
-            
             // Set up lexer and parser with the cleaned code
-            CharStream inputStream = CharStreams.fromString(codeWithoutCSS);
+            CharStream inputStream = CharStreams.fromString(sourceCode);
             MyLexer lexer = new MyLexer(inputStream);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             GrammarParser parser = new GrammarParser(tokens);
@@ -157,76 +154,5 @@ public class Main {
             System.err.println("Could not read source file: " + e.getMessage());
             return null;
         }
-    }
-
-    /**
-     * Remove CSS content from the source code.
-     * This is necessary because curly braces in CSS can cause lexer issues.
-     */
-    private static String removeCSSContent(String sourceCode) {
-        StringBuilder cleanedCode = new StringBuilder();
-        String[] lines = sourceCode.split("\n");
-        boolean inStyleBlock = false;
-        boolean inComponent = false;
-        int braceCount = 0;
-        boolean inComponentParams = false;
-        
-        for (String line : lines) {
-            String trimmedLine = line.trim();
-            
-            // Check if we're entering a component
-            if (trimmedLine.startsWith("@component(")) {
-                inComponent = true;
-                inComponentParams = true;
-                braceCount = 0;
-                cleanedCode.append(line).append("\n");
-                continue;
-            }
-            
-            // Count braces and parentheses to properly detect component end
-            if (inComponent) {
-                for (char c : line.toCharArray()) {
-                    if (c == '{') {
-                        braceCount++;
-                    } else if (c == '}') {
-                        braceCount--;
-                        // If we've closed all braces and we're not in component params, we're done
-                        if (braceCount == 0 && !inComponentParams) {
-                            inComponent = false;
-                        }
-                    } else if (c == ')') {
-                        // If we see a closing parenthesis and we're in component params, switch to body
-                        if (inComponentParams && braceCount == 0) {
-                            inComponentParams = false;
-                        }
-                    }
-                }
-                
-                // Special case: if we see "})" on a line, the component is definitely done
-                if (line.contains("})") && braceCount == 0) {
-                    inComponent = false;
-                    inComponentParams = false;
-                }
-            }
-            
-            // Check if we're entering a style tag (outside of component)
-            if (!inComponent && trimmedLine.startsWith("<style>")) {
-                inStyleBlock = true;
-                continue;
-            }
-            
-            // Check if we're exiting a style tag
-            if (inStyleBlock && trimmedLine.equals("</style>")) {
-                inStyleBlock = false;
-                continue;
-            }
-            
-            // Only add lines that are not in CSS style blocks
-            if (!inStyleBlock) {
-                cleanedCode.append(line).append("\n");
-            }
-        }
-        
-        return cleanedCode.toString().trim();
     }
 }

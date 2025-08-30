@@ -648,25 +648,4 @@ public interface GrammarParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitHtmlText(GrammarParser.HtmlTextContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code cssBrace}
-	 * labeled alternative in {@link GrammarParser#html}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitCssBrace(GrammarParser.CssBraceContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code cssLeftBrace}
-	 * labeled alternative in {@link GrammarParser#css_brace}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitCssLeftBrace(GrammarParser.CssLeftBraceContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code cssRightBrace}
-	 * labeled alternative in {@link GrammarParser#css_brace}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitCssRightBrace(GrammarParser.CssRightBraceContext ctx);
 }

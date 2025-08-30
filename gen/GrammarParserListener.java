@@ -1099,40 +1099,4 @@ public interface GrammarParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitHtmlText(GrammarParser.HtmlTextContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code cssBrace}
-	 * labeled alternative in {@link GrammarParser#html}.
-	 * @param ctx the parse tree
-	 */
-	void enterCssBrace(GrammarParser.CssBraceContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code cssBrace}
-	 * labeled alternative in {@link GrammarParser#html}.
-	 * @param ctx the parse tree
-	 */
-	void exitCssBrace(GrammarParser.CssBraceContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code cssLeftBrace}
-	 * labeled alternative in {@link GrammarParser#css_brace}.
-	 * @param ctx the parse tree
-	 */
-	void enterCssLeftBrace(GrammarParser.CssLeftBraceContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code cssLeftBrace}
-	 * labeled alternative in {@link GrammarParser#css_brace}.
-	 * @param ctx the parse tree
-	 */
-	void exitCssLeftBrace(GrammarParser.CssLeftBraceContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code cssRightBrace}
-	 * labeled alternative in {@link GrammarParser#css_brace}.
-	 * @param ctx the parse tree
-	 */
-	void enterCssRightBrace(GrammarParser.CssRightBraceContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code cssRightBrace}
-	 * labeled alternative in {@link GrammarParser#css_brace}.
-	 * @param ctx the parse tree
-	 */
-	void exitCssRightBrace(GrammarParser.CssRightBraceContext ctx);
 }

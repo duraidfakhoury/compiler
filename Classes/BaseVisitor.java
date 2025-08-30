@@ -2556,9 +2556,8 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
                                 String attrValue = ((StringNode) attrValueNode).getValue();
                                 node.addAttribute(attrName, attrValue);
                             } else if (attrValueNode instanceof ValueNode) {
-                                // For interpolated values, we'll store the expression as a string for now
-                                // This could be improved to handle dynamic attributes
-                                String attrValue = attrValueNode.toString();
+                                // Convert ValueNode to JavaScript expression and wrap in ${} for template literals
+                                String attrValue = "${" + convertValueNodeToExpression((ValueNode) attrValueNode) + "}";
                                 node.addAttribute(attrName, attrValue);
                             }
                         }
@@ -2614,6 +2613,8 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
                 leftExpr = convertValueNodeToExpression((ValueNode) propAccess.getLeft());
             } else if (propAccess.getLeft() instanceof IdentifierNode) {
                 leftExpr = ((IdentifierNode) propAccess.getLeft()).getName();
+            } else if (propAccess.getLeft() instanceof PropertyAccessValueNode) {
+                leftExpr = convertValueNodeToExpression(new ValueNode((PrimaryValueNode) propAccess.getLeft()));
             } else {
                 leftExpr = propAccess.getLeft().toString();
             }
@@ -2623,6 +2624,8 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
                 rightExpr = convertValueNodeToExpression((ValueNode) propAccess.getRight());
             } else if (propAccess.getRight() instanceof IdentifierNode) {
                 rightExpr = ((IdentifierNode) propAccess.getRight()).getName();
+            } else if (propAccess.getRight() instanceof PropertyAccessValueNode) {
+                rightExpr = convertValueNodeToExpression(new ValueNode((PrimaryValueNode) propAccess.getRight()));
             } else {
                 rightExpr = propAccess.getRight().toString();
             }
