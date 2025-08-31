@@ -18,7 +18,7 @@
                 <p>No products available</p>
             </div>
 
-            <button *ngIf=`isAdmin` style="display:block;margin:2.5rem auto 0;padding:1rem 2.2rem;font-size:1.1rem;font-weight:700;color:#fff;background:linear-gradient(90deg,#1976d2 60%,#64b5f6 100%);border:none;border-radius:10px;cursor:pointer;box-shadow:0 2px 8px rgba(25,118,210,0.13);transition:background .18s,transform .18s;letter-spacing:1px;">Add Product</button>
+            <button [click]="alert('test')" style="display:block;margin:2.5rem auto 0;padding:1rem 2.2rem;font-size:1.1rem;font-weight:700;color:#fff;background:linear-gradient(90deg,#1976d2 60%,#64b5f6 100%);border:none;border-radius:10px;cursor:pointer;box-shadow:0 2px 8px rgba(25,118,210,0.13);transition:background .18s,transform .18s;letter-spacing:1px;">Add Product</button>
         </div>
     `,
     products: [
@@ -58,5 +58,9 @@
             image: "https://dummyimage.com/600x400/000/fff",
             inStock: true
         }
-    ]
+    ],
+    showProducts: true,
+    viewProduct: () => {
+        alert("test")
+    }
 })

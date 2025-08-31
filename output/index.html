@@ -9,6 +9,9 @@
             constructor() {
                 super();
                 this._products = [{"name": "Apple iPhone 15", "price": 999, "image": "https://dummyimage.com/600x400/000/fff", "inStock": true}, {"name": "Samsung Galaxy S23", "price": 899, "image": "https://dummyimage.com/600x400/000/fff", "inStock": true}, {"name": "Google Pixel 8", "price": 799, "image": "https://dummyimage.com/600x400/000/fff", "inStock": false}, {"name": "OnePlus 11", "price": 749, "image": "https://dummyimage.com/600x400/000/fff", "inStock": true}, {"name": "Xiaomi 13 Pro", "price": 699, "image": "https://dummyimage.com/600x400/000/fff", "inStock": false}, {"name": "Sony Xperia 1 V", "price": 1099, "image": "https://dummyimage.com/600x400/000/fff", "inStock": true}];
+                this._showProducts = true;
+                this._viewProduct = () => {
+alert("test")};
                 this.render();
             }
             render() {
@@ -22,13 +25,9 @@
 ${this.products.map(product => `<div style="padding:1.5rem 1.2rem;margin-bottom:1.3rem;border-radius:16px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.07);transition:transform .18s,box-shadow .18s;border:1px solid #e3e8ee;display:flex;align-items:center;gap:1.5rem;position:relative;"><img src="${product.image}" style="width:120px;height:90px;object-fit:cover;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.10);border:2px solid #e3e8ee;background:#f4f6fa;margin-right:1.2rem;transition:transform .18s;" alt="{{product.name}}"></img><div style="flex:1;"><h3 style="margin:0 0 0.5rem 0;font-size:1.25rem;color:#1976d2;font-weight:600;letter-spacing:0.5px;">${product.name}</h3><p style="margin:0.3rem 0;font-size:1.05rem;font-weight:bold;color:#333;">Price: <span style="color:#388e3c;">$${product.price}</span></p><!-- ngIf directive: product.inStock -->
 ${product.inStock ? `<p style="margin:0.3rem 0 0 0;font-size:1rem;color:#28a745;font-weight:500;display:inline-block;background:#e8f5e9;padding:0.2rem 0.7rem;border-radius:6px;letter-spacing:0.5px;">In Stock</p>` : ''}<!-- ngIf directive: !product.inStock -->
 ${!product.inStock ? `<p style="margin:0.3rem 0 0 0;font-size:1rem;color:#c62828;font-weight:500;display:inline-block;background:#ffebee;padding:0.2rem 0.7rem;border-radius:6px;letter-spacing:0.5px;">Out of Stock</p>` : ''}</div></div>`).join('')}<!-- ngIf directive: !this.products.length -->
-${!this.products.length ? `<div style="text-align:center;padding:2rem 1.5rem;margin-top:2.5rem;border:2.5px dashed #b0bec5;border-radius:14px;background:#f5f7fa;font-style:italic;color:#607d8b;font-size:1.15rem;letter-spacing:0.5px;"><p>No products available</p></div>` : ''}<!-- ngIf directive: isAdmin -->
-${this.isAdmin ? `<button style="display:block;margin:2.5rem auto 0;padding:1rem 2.2rem;font-size:1.1rem;font-weight:700;color:#fff;background:linear-gradient(90deg,#1976d2 60%,#64b5f6 100%);border:none;border-radius:10px;cursor:pointer;box-shadow:0 2px 8px rgba(25,118,210,0.13);transition:background .18s,transform .18s;letter-spacing:1px;">Add Product</button>` : ''}</div>                `;
-                
-                // Unwrap: replace the custom element node with the template's children
+${!this.products.length ? `<div style="text-align:center;padding:2rem 1.5rem;margin-top:2.5rem;border:2.5px dashed #b0bec5;border-radius:14px;background:#f5f7fa;font-style:italic;color:#607d8b;font-size:1.15rem;letter-spacing:0.5px;"><p>No products available</p></div>` : ''}<button onclick="console.log(viewProduct)" style="display:block;margin:2.5rem auto 0;padding:1rem 2.2rem;font-size:1.1rem;font-weight:700;color:#fff;background:linear-gradient(90deg,#1976d2 60%,#64b5f6 100%);border:none;border-radius:10px;cursor:pointer;box-shadow:0 2px 8px rgba(25,118,210,0.13);transition:background .18s,transform .18s;letter-spacing:1px;">Add Product</button></div>                `;
                 const frag = template.content.cloneNode(true);
                 this.replaceWith(frag);
-                return;
             }
             
             // Component properties
@@ -40,6 +39,28 @@ ${this.isAdmin ? `<button style="display:block;margin:2.5rem auto 0;padding:1rem
                     this.removeAttribute('products');
                 } else {
                     this.setAttribute('products', value);
+                }
+                this.render();
+            }
+            get showProducts() {
+                return this.getAttribute('showProducts') || this._showProducts;
+            }
+            set showProducts(value) {
+                if (value === null || value === undefined) {
+                    this.removeAttribute('showProducts');
+                } else {
+                    this.setAttribute('showProducts', value);
+                }
+                this.render();
+            }
+            get viewProduct() {
+                return this.getAttribute('viewProduct') || this._viewProduct;
+            }
+            set viewProduct(value) {
+                if (value === null || value === undefined) {
+                    this.removeAttribute('viewProduct');
+                } else {
+                    this.setAttribute('viewProduct', value);
                 }
                 this.render();
             }
@@ -59,6 +80,8 @@ ${this.isAdmin ? `<button style="display:block;margin:2.5rem auto 0;padding:1rem
             static get observedAttributes() {
                 return [
                     'products',
+                    'showProducts',
+                    'viewProduct',
                 ];
             }
         }

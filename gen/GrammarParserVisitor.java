@@ -594,6 +594,13 @@ public interface GrammarParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitNgIfAttributeRule(GrammarParser.NgIfAttributeRuleContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code clickEventAttributeRule}
+	 * labeled alternative in {@link GrammarParser#attribute}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitClickEventAttributeRule(GrammarParser.ClickEventAttributeRuleContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code regularAttribute}
 	 * labeled alternative in {@link GrammarParser#attribute}.
 	 * @param ctx the parse tree

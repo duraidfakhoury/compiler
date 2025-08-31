@@ -87,6 +87,7 @@ import { OpenTagRuleContext } from "./GrammarParser.js";
 import { AttributesContext } from "./GrammarParser.js";
 import { NgForAttributeRuleContext } from "./GrammarParser.js";
 import { NgIfAttributeRuleContext } from "./GrammarParser.js";
+import { ClickEventAttributeRuleContext } from "./GrammarParser.js";
 import { RegularAttributeContext } from "./GrammarParser.js";
 import { AttributeValueContext } from "./GrammarParser.js";
 import { SimpleInterpolationContext } from "./GrammarParser.js";
@@ -690,6 +691,13 @@ export default class GrammarParserVisitor<Result> extends ParseTreeVisitor<Resul
 	 * @return the visitor result
 	 */
 	visitNgIfAttributeRule?: (ctx: NgIfAttributeRuleContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `clickEventAttributeRule`
+	 * labeled alternative in `GrammarParser.attribute`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitClickEventAttributeRule?: (ctx: ClickEventAttributeRuleContext) => Result;
 	/**
 	 * Visit a parse tree produced by the `regularAttribute`
 	 * labeled alternative in `GrammarParser.attribute`.

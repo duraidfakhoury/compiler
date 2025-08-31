@@ -1006,6 +1006,18 @@ public interface GrammarParserListener extends ParseTreeListener {
 	 */
 	void exitNgIfAttributeRule(GrammarParser.NgIfAttributeRuleContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code clickEventAttributeRule}
+	 * labeled alternative in {@link GrammarParser#attribute}.
+	 * @param ctx the parse tree
+	 */
+	void enterClickEventAttributeRule(GrammarParser.ClickEventAttributeRuleContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code clickEventAttributeRule}
+	 * labeled alternative in {@link GrammarParser#attribute}.
+	 * @param ctx the parse tree
+	 */
+	void exitClickEventAttributeRule(GrammarParser.ClickEventAttributeRuleContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code regularAttribute}
 	 * labeled alternative in {@link GrammarParser#attribute}.
 	 * @param ctx the parse tree

@@ -7,8 +7,10 @@ public class FunctionBodyNode extends PrimaryValueNode {
     private boolean blockStyle; // true = {} block, false = arrow
     private List<ASTNode> statements = new ArrayList<>(); // for block
     private List<String> params = new ArrayList<>(); // for arrow
-    private ValueNode arrowValue; // for arrow
+    private ValueNode arrowValue; // for arrow (expression style)
+    private List<ASTNode> arrowStatements = new ArrayList<>(); // for arrow (statement style)
     private TypeDefineNode returnType;
+    private boolean arrowHasStatements; // true if arrow function has statements, false if expression
 
     public void setBlockStyle(boolean blockStyle) {
         this.blockStyle = blockStyle;
@@ -18,12 +20,18 @@ public class FunctionBodyNode extends PrimaryValueNode {
         statements.add(stmt);
     }
 
+    public void addArrowStatement(ASTNode stmt) {
+        arrowStatements.add(stmt);
+        arrowHasStatements = true;
+    }
+
     public void setParams(List<String> params) {
         this.params = params;
     }
 
     public void setArrowValue(ValueNode value) {
         this.arrowValue = value;
+        arrowHasStatements = false;
     }
 
     public void setReturnType(TypeDefineNode returnType) {
@@ -38,6 +46,10 @@ public class FunctionBodyNode extends PrimaryValueNode {
         return statements;
     }
     
+    public List<ASTNode> getArrowStatements() {
+        return arrowStatements;
+    }
+    
     public List<String> getParams() {
         return params;
     }
@@ -48,6 +60,10 @@ public class FunctionBodyNode extends PrimaryValueNode {
     
     public boolean isBlockStyle() {
         return blockStyle;
+    }
+
+    public boolean arrowHasStatements() {
+        return arrowHasStatements;
     }
 
     @Override
@@ -62,8 +78,20 @@ public class FunctionBodyNode extends PrimaryValueNode {
             }
             return sb.toString();
         } else {
-            return "ArrowFunctionBody: (" + String.join(", ", params) + ") => " + arrowValue +
-                    (returnType != null ? " : " + returnType : "");
+            StringBuilder sb = new StringBuilder("ArrowFunctionBody: (" + String.join(", ", params) + ") => ");
+            if (arrowHasStatements) {
+                sb.append("{\n");
+                for (ASTNode stmt : arrowStatements) {
+                    sb.append("  ").append(stmt).append("\n");
+                }
+                sb.append("}");
+            } else {
+                sb.append(arrowValue);
+            }
+            if (returnType != null) {
+                sb.append(" : ").append(returnType);
+            }
+            return sb.toString();
         }
     }
 }

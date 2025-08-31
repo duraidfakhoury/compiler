@@ -38,7 +38,16 @@ public class Main {
                 @Override
                 public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
                                         int line, int charPositionInLine, String msg, RecognitionException e) {
-                    System.err.println("Syntax Error at line " + line + ":" + charPositionInLine + " - " + msg);
+                    String rule = "";
+                    if (recognizer instanceof Parser) {
+                        Parser parser = (Parser) recognizer;
+                        int ruleIndex = parser.getContext() != null ? parser.getContext().getRuleIndex() : -1;
+                        if (ruleIndex >= 0) {
+                            rule = parser.getRuleNames()[ruleIndex];
+                        }
+                    }
+                    System.err.println("Syntax Error at line " + line + ":" + charPositionInLine + " - " + msg +
+                        (rule.isEmpty() ? "" : " (in rule: " + rule + ")"));
                 }
             });
 

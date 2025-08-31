@@ -31,6 +31,72 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         "ngStyle", "ngModel", "ngSubmit", "ngClick", "ngChange", "ngBlur", "ngFocus", "ngKeyup", "ngKeydown"
     );
 
+    // Known built-in browser functions that should not trigger semantic errors
+    private static final Set<String> BUILTIN_FUNCTIONS = Set.of(
+        "alert", "setTimeout", "setInterval", "clearTimeout", "clearInterval",
+        "parseInt", "parseFloat", "isNaN", "isFinite", "encodeURI", "decodeURI",
+        "encodeURIComponent", "decodeURIComponent", "escape", "unescape",
+        "eval"
+    );
+
+    // Known built-in browser objects and their common methods
+    private static final Set<String> BUILTIN_OBJECTS = Set.of(
+        "console", "window", "document", "navigator", "location", "history",
+        "localStorage", "sessionStorage", "Math", "JSON", "Date", "RegExp",
+        "Error", "Promise", "Map", "Set", "WeakMap", "WeakSet", "Array",
+        "Object", "String", "Number", "Boolean", "Function", "Symbol",
+        "Proxy", "Reflect", "Intl"
+    );
+
+    // Common console methods that should be recognized
+    private static final Set<String> CONSOLE_METHODS = Set.of(
+        "log", "error", "warn", "info", "debug", "trace", "assert", "clear", "count", "countReset",
+        "dir", "dirxml", "group", "groupCollapsed", "groupEnd", "table", "time", "timeEnd", "timeLog"
+    );
+
+    // Constructor to initialize built-in functions
+    public BaseVisitor() {
+        initializeBuiltinFunctions();
+    }
+
+    /**
+     * Initialize built-in browser functions in the global scope
+     */
+    private void initializeBuiltinFunctions() {
+        // Add built-in functions
+        for (String funcName : BUILTIN_FUNCTIONS) {
+            // Add to global scope
+            symbolTable.declareSymbol(funcName, "function", "builtin_function", 0, 0);
+            Symbol funcSymbol = symbolTable.lookupSymbol(funcName);
+            if (funcSymbol != null) {
+                funcSymbol.setInitialized(true);
+                funcSymbol.setUsed(true); // Mark as used since it's built-in
+            }
+        }
+        
+        // Add built-in objects
+        for (String objName : BUILTIN_OBJECTS) {
+            // Add to global scope
+            symbolTable.declareSymbol(objName, "object", "builtin_object", 0, 0);
+            Symbol objSymbol = symbolTable.lookupSymbol(objName);
+            if (objSymbol != null) {
+                objSymbol.setInitialized(true);
+                objSymbol.setUsed(true); // Mark as used since it's built-in
+            }
+        }
+        
+        // Add console methods as built-in functions
+        for (String methodName : CONSOLE_METHODS) {
+            // Add to global scope
+            symbolTable.declareSymbol(methodName, "function", "builtin_function", 0, 0);
+            Symbol methodSymbol = symbolTable.lookupSymbol(methodName);
+            if (methodSymbol != null) {
+                methodSymbol.setInitialized(true);
+                methodSymbol.setUsed(true); // Mark as used since it's built-in
+            }
+        }
+    }
+
     // Getter for symbol table
     public SymbolTable getSymbolTable() {
         return symbolTable;
@@ -803,6 +869,19 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
             }
         }
         
+        // Check if this is property access on a built-in object
+        if (left instanceof ValueNode) {
+            ValueNode leftValue = (ValueNode) left;
+            if (leftValue.getPrimaryValue() instanceof IdentifierNode) {
+                String leftIdentifier = ((IdentifierNode) leftValue.getPrimaryValue()).getName();
+                if (BUILTIN_OBJECTS.contains(leftIdentifier)) {
+                    // This is property access on a built-in object, allow it
+                    PropertyAccessValueNode propAccess = new PropertyAccessValueNode(left, right);
+                    return new ValueNode(propAccess);
+                }
+            }
+        }
+        
         // SEMANTIC ERROR: Check if left is an array/object for property access
         if (left instanceof ValueNode) {
             String leftType = getValueType((ValueNode) left);
@@ -867,6 +946,25 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
             }
         }
         
+        // Check if this is a method call on a built-in object
+        if (left instanceof ValueNode) {
+            ValueNode leftValue = (ValueNode) left;
+            if (leftValue.getPrimaryValue() instanceof PropertyAccessValueNode) {
+                PropertyAccessValueNode propAccess = (PropertyAccessValueNode) leftValue.getPrimaryValue();
+                if (propAccess.getLeft() instanceof ValueNode) {
+                    ValueNode baseValue = (ValueNode) propAccess.getLeft();
+                    if (baseValue.getPrimaryValue() instanceof IdentifierNode) {
+                        String baseIdentifier = ((IdentifierNode) baseValue.getPrimaryValue()).getName();
+                        if (BUILTIN_OBJECTS.contains(baseIdentifier)) {
+                            // This is a method call on a built-in object, allow it
+                            MethodCallValueNode methodCall = new MethodCallValueNode(left, args);
+                            return new ValueNode(methodCall);
+                        }
+                    }
+                }
+            }
+        }
+        
         // SEMANTIC ERROR: Check if method is called on appropriate type
         if (left instanceof ValueNode) {
             String leftType = getValueType((ValueNode) left);
@@ -917,14 +1015,43 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         // Enter a new scope for the arrow function parameters
         symbolTable.enterScope("arrow_function");
         
-        for (var paramCtx : ctx.params) {
-            String paramName = paramCtx.getText();
+        // Handle different parameter patterns
+        if (ctx.params != null && !ctx.params.isEmpty()) {
+            // Handle (param1, param2, ...) => body
+            for (Token paramToken : ctx.params) {
+                String paramName = paramToken.getText();
+                params.add(paramName);
+                // Declare the parameter in the arrow function scope
+                symbolTable.declareSymbol(paramName, "any", "parameter", paramToken.getLine(), paramToken.getCharPositionInLine());
+            }
+        } else if (ctx.param != null) {
+            // Handle param => body
+            String paramName = ctx.param.getText();
             params.add(paramName);
             // Declare the parameter in the arrow function scope
-            symbolTable.declareSymbol(paramName, "any", "parameter", paramCtx.getLine(), paramCtx.getCharPositionInLine());
+            symbolTable.declareSymbol(paramName, "any", "parameter", ctx.param.getLine(), ctx.param.getCharPositionInLine());
         }
+        // For () => body, params list remains empty
         
-        ASTNode body = visit(ctx.body);
+        ASTNode body;
+        if (ctx.stmts != null && !ctx.stmts.isEmpty()) {
+            // Handle statement block body: => { statements }
+            FunctionBodyNode bodyNode = new FunctionBodyNode();
+            bodyNode.setBlockStyle(false);
+            bodyNode.setParams(params);
+            
+            for (var stmtCtx : ctx.stmts) {
+                bodyNode.addArrowStatement(visit(stmtCtx));
+            }
+            
+            body = bodyNode;
+        } else if (ctx.value() != null) {
+            // Handle expression body: => expression
+            body = visit(ctx.value());
+        } else {
+            // Fallback for empty arrow functions
+            body = null;
+        }
         
         // Exit the arrow function scope
         symbolTable.exitScope();
@@ -1358,7 +1485,17 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         }
 
         bodyNode.setParams(params);
-        bodyNode.setArrowValue((ValueNode) visit(ctx.expr));
+
+        // Handle arrow function body - either expression or statements
+        if (ctx.expr != null) {
+            // Expression style: (params) => expression
+            bodyNode.setArrowValue((ValueNode) visit(ctx.expr));
+        } else if (ctx.stmts != null && !ctx.stmts.isEmpty()) {
+            // Statement style: (params) => { statements }
+            for (var stmtCtx : ctx.stmts) {
+                bodyNode.addArrowStatement(visit(stmtCtx));
+            }
+        }
 
         if (ctx.type != null) {
             bodyNode.setReturnType((TypeDefineNode) visit(ctx.type));
@@ -1375,15 +1512,27 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         // Check if function exists
         Symbol function = symbolTable.lookupSymbol(functionName);
         if (function == null) {
-            symbolTable.addSemanticError("Undefined function '" + functionName + "' at line " + token.getLine());
-        } else if (!function.getKind().equals("function")) {
+            // Check if it's a built-in function
+            if (BUILTIN_FUNCTIONS.contains(functionName)) {
+                // It's a built-in function, add it to the symbol table
+                symbolTable.declareSymbol(functionName, "function", "builtin_function", token.getLine(), token.getCharPositionInLine());
+                function = symbolTable.lookupSymbol(functionName);
+                if (function != null) {
+                    function.setInitialized(true);
+                    function.setUsed(true);
+                }
+            } else {
+                symbolTable.addSemanticError("Undefined function '" + functionName + "' at line " + token.getLine());
+            }
+        } else if (!function.getKind().equals("function") && !function.getKind().equals("builtin_function")) {
             symbolTable.addSemanticError("'" + functionName + "' is not a function at line " + token.getLine());
         } else {
             function.setUsed(true);
         }
 
         // SEMANTIC ERROR: Function call with wrong number of arguments
-        if (function != null && function.getKind().equals("function")) {
+        // Skip argument validation for built-in functions since we don't know their exact signatures
+        if (function != null && function.getKind().equals("function") && !function.getKind().equals("builtin_function")) {
             int expected = function.getParameterCount();
             int actual = ctx.args != null ? ctx.args.size() : 0;
             if (expected != -1 && expected != actual) {
@@ -2615,6 +2764,35 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
                         
                         // Store the ngIf directive information in the HtmlNode
                         node.addAttribute("*ngIf", convertValueNodeToExpression(condition));
+                    } else if (attr instanceof GrammarParser.ClickEventAttributeRuleContext) {
+                        // Handle [click] event binding
+                        GrammarParser.ClickEventAttributeRuleContext clickAttr = (GrammarParser.ClickEventAttributeRuleContext) attr;
+                        
+                        // Ensure template context is maintained when processing click event values
+                        boolean wasInTemplateContext = inTemplateContext;
+                        inTemplateContext = true;
+                        ASTNode clickValueNode = visit(clickAttr.val);
+                        inTemplateContext = wasInTemplateContext;
+                        
+                        // SEMANTIC ERROR: Check if click event value is valid
+                        if (clickValueNode == null) {
+                            symbolTable.addSemanticError(
+                                "Click event binding value cannot be null at line " + attr.getStart().getLine()
+                            );
+                        }
+                        
+                        // Store the click event binding information in the HtmlNode
+                        // We'll transform this to onclick during code generation
+                        String clickValue;
+                        if (clickValueNode instanceof StringNode) {
+                            clickValue = ((StringNode) clickValueNode).getValue();
+                        } else if (clickValueNode instanceof ValueNode) {
+                            clickValue = convertValueNodeToExpression((ValueNode) clickValueNode);
+                        } else {
+                            // Fallback for other types
+                            clickValue = clickValueNode.toString();
+                        }
+                        node.addAttribute("[click]", clickValue);
                     } else {
                         // Handle regular attributes
                         if (attr instanceof GrammarParser.RegularAttributeContext) {

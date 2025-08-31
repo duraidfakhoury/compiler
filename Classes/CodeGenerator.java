@@ -150,11 +150,8 @@ public class CodeGenerator {
         
         indentLevel--;
         appendLine("`;");
-        appendLine("");
-        appendLine("// Unwrap: replace the custom element node with the template's children");
         appendLine("const frag = template.content.cloneNode(true);");
         appendLine("this.replaceWith(frag);");
-        appendLine("return;");
         indentLevel--;
         appendLine("}");
         
@@ -304,7 +301,12 @@ public class CodeGenerator {
             // Add attributes (excluding Angular directives)
             for (HtmlNode.HtmlAttribute attr : element.getAttributes()) {
                 if (!"*ngFor".equals(attr.getName()) && !"*ngIf".equals(attr.getName())) {
-                    appendLine("        element.setAttribute('" + attr.getName() + "', '" + attr.getValue() + "');");
+                    if ("[click]".equals(attr.getName())) {
+                        // Transform [click] to onclick for standard HTML
+                        appendLine("        element.setAttribute('onclick', '" + attr.getValue() + "');");
+                    } else {
+                        appendLine("        element.setAttribute('" + attr.getName() + "', '" + attr.getValue() + "');");
+                    }
                 }
             }
             
@@ -333,7 +335,12 @@ public class CodeGenerator {
         // Add attributes (excluding Angular directives)
         for (HtmlNode.HtmlAttribute attr : element.getAttributes()) {
             if (!"*ngFor".equals(attr.getName()) && !"*ngIf".equals(attr.getName())) {
-                appendLine("        element.setAttribute('" + attr.getName() + "', '" + attr.getValue() + "');");
+                if ("[click]".equals(attr.getName())) {
+                    // Transform [click] to onclick for standard HTML
+                    appendLine("        element.setAttribute('onclick', '" + attr.getValue() + "');");
+                } else {
+                    appendLine("        element.setAttribute('" + attr.getName() + "', '" + attr.getValue() + "');");
+                }
             }
         }
         
@@ -404,7 +411,12 @@ public class CodeGenerator {
             // Add attributes (excluding Angular directives)
             for (HtmlNode.HtmlAttribute attr : element.getAttributes()) {
                 if (!"*ngFor".equals(attr.getName()) && !"*ngIf".equals(attr.getName())) {
-                    appendLine("        element.setAttribute('" + attr.getName() + "', '" + attr.getValue() + "');");
+                    if ("[click]".equals(attr.getName())) {
+                        // Transform [click] to onclick for standard HTML
+                        appendLine("        element.setAttribute('onclick', '" + attr.getValue() + "');");
+                    } else {
+                        appendLine("        element.setAttribute('" + attr.getName() + "', '" + attr.getValue() + "');");
+                    }
                 }
             }
             
@@ -428,7 +440,12 @@ public class CodeGenerator {
         // Add attributes (excluding Angular directives)
         for (HtmlNode.HtmlAttribute attr : element.getAttributes()) {
             if (!"*ngFor".equals(attr.getName()) && !"*ngIf".equals(attr.getName())) {
-                appendLine("        element.setAttribute('" + attr.getName() + "', '" + attr.getValue() + "');");
+                if ("[click]".equals(attr.getName())) {
+                    // Transform [click] to onclick for standard HTML
+                    appendLine("        element.setAttribute('onclick', '" + attr.getValue() + "');");
+                } else {
+                    appendLine("        element.setAttribute('" + attr.getName() + "', '" + attr.getValue() + "');");
+                }
             }
         }
         
@@ -783,6 +800,13 @@ public class CodeGenerator {
     private String generatePropertyDefaultValue(ValueNode valueNode) {
         if (valueNode == null) return "null";
 
+        // Special handling: if the ValueNode itself is an ArrowFunctionValueNode, handle as function
+        if (valueNode.getPrimaryValue() instanceof ArrowFunctionValueNode) {
+            ArrowFunctionValueNode arrowNode = (ArrowFunctionValueNode) valueNode.getPrimaryValue();
+            // Generate the arrow function as a string (not quoted, so it's a real function)
+            return generateExpression(arrowNode);
+        }
+
         Object primary = valueNode.getPrimaryValue();
 
         if (primary instanceof StringNode) {
@@ -829,9 +853,9 @@ public class CodeGenerator {
             MethodCallValueNode methodNode = (MethodCallValueNode) primary;
             return "\"" + generateExpression(methodNode) + "\"";
         } else if (primary instanceof ArrowFunctionValueNode) {
-            // For arrow function, just return as string (could be improved)
+            // For arrow function, just return as function (not quoted)
             ArrowFunctionValueNode arrowNode = (ArrowFunctionValueNode) primary;
-            return "\"" + generateExpression(arrowNode) + "\"";
+            return generateExpression(arrowNode);
         } else if (primary instanceof ParenthesizedValueNode) {
             ParenthesizedValueNode parenNode = (ParenthesizedValueNode) primary;
             return generatePropertyDefaultValue(parenNode.getInnerValue());
@@ -915,6 +939,11 @@ public class CodeGenerator {
             ForInStatementNode forInNode = (ForInStatementNode) primary;
             return generateExpression(forInNode);
         } else if (primary instanceof BlockNode) {
+            BlockNode blockNode = (BlockNode) primary;
+            return generateExpression(blockNode);
+        } else if (primary instanceof FunctionBodyNode) {
+            FunctionBodyNode functionBodyNode = (FunctionBodyNode) primary;
+            return generateExpression(functionBodyNode);
         }
 
         return "null";
@@ -968,7 +997,27 @@ public class CodeGenerator {
         }
         
         arrowFunc.append(") => ");
-        arrowFunc.append(generateExpression(node.getBody()));
+        // Handle different body types
+        if (node.getBody() == null) {
+            // Handle empty arrow function
+            arrowFunc.append("undefined");
+        } else if (node.getBody() instanceof FunctionBodyNode) {
+            FunctionBodyNode functionBody = (FunctionBodyNode) node.getBody();
+            if (functionBody.arrowHasStatements()) {
+                // Statement style: (params) => { statements }
+                arrowFunc.append("{");
+                for (ASTNode stmt : functionBody.getArrowStatements()) {
+                    arrowFunc.append("\n  ").append(generateExpression(stmt));
+                }
+                arrowFunc.append("\n}");
+            } else if (functionBody.getArrowValue() != null) {
+                // Expression style: (params) => expression
+                arrowFunc.append(generateExpression(functionBody.getArrowValue()));
+            }
+        } else {
+            // Regular expression body
+            arrowFunc.append(generateExpression(node.getBody()));
+        }
         
         appendLine(arrowFunc.toString());
     }
@@ -981,6 +1030,14 @@ public class CodeGenerator {
             String varName = ((IdentifierNode) node).getName();
             usedProperties.add(varName);
             return "this." + varName;
+        } else if (node instanceof ValueNode) {
+            // ValueNode can wrap another node (e.g., IdentifierNode, NumberNode, etc.)
+            ValueNode valueNode = (ValueNode) node;
+            if (valueNode.getPrimaryValue() != null) {
+                return generateExpression(valueNode.getPrimaryValue());
+            } else {
+                return "undefined";
+            }
         } else if (node instanceof StringNode) {
             return "\"" + ((StringNode) node).getValue() + "\"";
         } else if (node instanceof NumberNode) {
@@ -1021,7 +1078,27 @@ public class CodeGenerator {
             }
             
             arrowFunc.append(") => ");
-            arrowFunc.append(generateExpression(arrowNode.getBody()));
+            // Handle different body types
+            if (arrowNode.getBody() == null) {
+                // Handle empty arrow function
+                arrowFunc.append("undefined");
+            } else if (arrowNode.getBody() instanceof FunctionBodyNode) {
+                FunctionBodyNode functionBody = (FunctionBodyNode) arrowNode.getBody();
+                if (functionBody.arrowHasStatements()) {
+                    // Statement style: (params) => { statements }
+                    arrowFunc.append("{");
+                    for (ASTNode stmt : functionBody.getArrowStatements()) {
+                        arrowFunc.append("\n  ").append(generateExpression(stmt));
+                    }
+                    arrowFunc.append("\n}");
+                } else if (functionBody.getArrowValue() != null) {
+                    // Expression style: (params) => expression
+                    arrowFunc.append(generateExpression(functionBody.getArrowValue()));
+                }
+            } else {
+                // Regular expression body
+                arrowFunc.append(generateExpression(arrowNode.getBody()));
+            }
             
             return arrowFunc.toString();
         } else if (node instanceof FunctionCallNode) {
@@ -1051,7 +1128,15 @@ public class CodeGenerator {
                 // Handle arrow function body
                 StringBuilder arrowBody = new StringBuilder();
                 arrowBody.append("(").append(String.join(", ", functionBody.getParams())).append(") => ");
-                if (functionBody.getArrowValue() != null) {
+                if (functionBody.arrowHasStatements()) {
+                    // Statement style: (params) => { statements }
+                    arrowBody.append("{");
+                    for (ASTNode stmt : functionBody.getArrowStatements()) {
+                        arrowBody.append("\n").append(generateExpression(stmt));
+                    }
+                    arrowBody.append("\n}");
+                } else if (functionBody.getArrowValue() != null) {
+                    // Expression style: (params) => expression
                     arrowBody.append(generateExpression(functionBody.getArrowValue()));
                 }
                 return arrowBody.toString();
@@ -1151,25 +1236,46 @@ public class CodeGenerator {
             return generateExpression(typeNode.getValue());
         } else if (node instanceof TypeDefineNode) {
             TypeDefineNode typeDefineNode = (TypeDefineNode) node;
-            String typeName = typeDefineNode.getName();
-            return typeDefineNode.isArray() ? typeName + "[]" : typeName;
+            return generateExpression(typeDefineNode);
         } else if (node instanceof TypeNode) {
             TypeNode typeNode = (TypeNode) node;
-            String typeName = typeNode.getTypeName();
-            return typeNode.isArray() ? typeName + "[]" : typeName;
-        } else if (node instanceof HtmlNode) {
-            HtmlNode htmlNode = (HtmlNode) node;
-            StringBuilder html = new StringBuilder();
-            generateHtmlNodeForTemplate(htmlNode, html);
-            return html.toString();
-        } else if (node instanceof ValueNode) {
-            // Handle ValueNode by extracting its primary value
-            ValueNode valueNode = (ValueNode) node;
-            if (valueNode.getPrimaryValue() != null) {
-                return generateExpression(valueNode.getPrimaryValue());
-            }
+            return generateExpression(typeNode);
+        } else if (node instanceof VariableDeclarationNode) {
+            VariableDeclarationNode varDeclNode = (VariableDeclarationNode) node;
+            return generateExpression(varDeclNode);
+        } else if (node instanceof VariableAssignNode) {
+            VariableAssignNode varAssignNode = (VariableAssignNode) node;
+            return generateExpression(varAssignNode);
+        } else if (node instanceof FunctionDeclarationNode) {
+            FunctionDeclarationNode funcDeclNode = (FunctionDeclarationNode) node;
+            return generateExpression(funcDeclNode);
+        } else if (node instanceof FunctionCallNode) {
+            FunctionCallNode funcCallNode = (FunctionCallNode) node;
+            return generateExpression(funcCallNode);
+        } else if (node instanceof ReturnNode) {
+            ReturnNode returnNode = (ReturnNode) node;
+            return generateExpression(returnNode);
+        } else if (node instanceof IfStatementNode) {
+            IfStatementNode ifNode = (IfStatementNode) node;
+            return generateExpression(ifNode);
+        } else if (node instanceof IfBodyNode) {
+            IfBodyNode ifBodyNode = (IfBodyNode) node;
+            return generateExpression(ifBodyNode);
+        } else if (node instanceof ForStatementNode) {
+            ForStatementNode forNode = (ForStatementNode) node;
+            return generateExpression(forNode);
+        } else if (node instanceof WhileStatementNode) {
+            WhileStatementNode whileNode = (WhileStatementNode) node;
+            return generateExpression(whileNode);
+        } else if (node instanceof DoWhileStatementNode) {
+            DoWhileStatementNode doWhileNode = (DoWhileStatementNode) node;
+            return generateExpression(doWhileNode);
+        } else if (node instanceof ForInStatementNode) {
+            ForInStatementNode forInNode = (ForInStatementNode) node;
+            return generateExpression(forInNode);
+        } else if (node instanceof BlockNode) {
         }
-        
+
         return "/* Unsupported expression: " + node.getClass().getSimpleName() + " */";
     }
     
@@ -1235,7 +1341,28 @@ public class CodeGenerator {
             }
             
             arrowFunc.append(") => ");
-            arrowFunc.append(generateExpressionForNested(arrowNode.getBody(), false)); // Use nested for arrow function body
+            
+            // Handle different body types
+            if (arrowNode.getBody() == null) {
+                // Handle empty arrow function
+                arrowFunc.append("undefined");
+            } else if (arrowNode.getBody() instanceof FunctionBodyNode) {
+                FunctionBodyNode functionBody = (FunctionBodyNode) arrowNode.getBody();
+                if (functionBody.arrowHasStatements()) {
+                    // Statement style: (params) => { statements }
+                    arrowFunc.append("{");
+                    for (ASTNode stmt : functionBody.getArrowStatements()) {
+                        arrowFunc.append("\n  ").append(generateExpressionForNested(stmt, false));
+                    }
+                    arrowFunc.append("\n}");
+                } else if (functionBody.getArrowValue() != null) {
+                    // Expression style: (params) => expression
+                    arrowFunc.append(generateExpressionForNested(functionBody.getArrowValue(), false));
+                }
+            } else {
+                // Regular expression body
+                arrowFunc.append(generateExpressionForNested(arrowNode.getBody(), false));
+            }
             
             return arrowFunc.toString();
         } else if (node instanceof FunctionCallNode) {
@@ -1265,7 +1392,15 @@ public class CodeGenerator {
                 // Handle arrow function body
                 StringBuilder arrowBody = new StringBuilder();
                 arrowBody.append("(").append(String.join(", ", functionBody.getParams())).append(") => ");
-                if (functionBody.getArrowValue() != null) {
+                if (functionBody.arrowHasStatements()) {
+                    // Statement style: (params) => { statements }
+                    arrowBody.append("{");
+                    for (ASTNode stmt : functionBody.getArrowStatements()) {
+                        arrowBody.append("\n").append(generateExpressionForMainTemplate(stmt));
+                    }
+                    arrowBody.append("}");
+                } else if (functionBody.getArrowValue() != null) {
+                    // Expression style: (params) => expression
                     arrowBody.append(generateExpressionForNested(functionBody.getArrowValue(), false)); // Use nested for arrow function body
                 }
                 return arrowBody.toString();
@@ -1400,6 +1535,11 @@ public class CodeGenerator {
      * @param isComponentProperty Whether this identifier represents a component property (true) or local variable (false)
      */
     private String generateExpressionForNested(ASTNode node, boolean isComponentProperty) {
+        // Add null safety check
+        if (node == null) {
+            return "undefined";
+        }
+        
         if (node instanceof ValueNode) {
             ValueNode valueNode = (ValueNode) node;
             String expression = generateExpressionForNested(valueNode.getPrimaryValue(), isComponentProperty);
@@ -1465,7 +1605,32 @@ public class CodeGenerator {
             }
             
             arrowFunc.append(") => ");
-            arrowFunc.append(generateExpressionForNested(arrowNode.getBody(), false));
+            
+            // Handle different body types
+            if (arrowNode.getBody() == null) {
+                // Handle empty arrow function
+                arrowFunc.append("undefined");
+            } else if (arrowNode.getBody() instanceof FunctionBodyNode) {
+                FunctionBodyNode functionBody = (FunctionBodyNode) arrowNode.getBody();
+                if (functionBody.arrowHasStatements()) {
+                    // Statement style: (params) => { statements }
+                    arrowFunc.append("{");
+                    for (ASTNode stmt : functionBody.getArrowStatements()) {
+                        if (stmt != null) {
+                            arrowFunc.append("\n  ").append(generateExpressionForNested(stmt, false));
+                        } else {
+                            arrowFunc.append("\n  // null statement");
+                        }
+                    }
+                    arrowFunc.append("\n}");
+                } else if (functionBody.getArrowValue() != null) {
+                    // Expression style: (params) => expression
+                    arrowFunc.append(generateExpressionForNested(functionBody.getArrowValue(), false));
+                }
+            } else {
+                // Regular expression body
+                arrowFunc.append(generateExpressionForNested(arrowNode.getBody(), false));
+            }
             
             return arrowFunc.toString();
         } else if (node instanceof FunctionCallNode) {
@@ -1495,7 +1660,19 @@ public class CodeGenerator {
                 // Handle arrow function body
                 StringBuilder arrowBody = new StringBuilder();
                 arrowBody.append("(").append(String.join(", ", functionBody.getParams())).append(") => ");
-                if (functionBody.getArrowValue() != null) {
+                if (functionBody.arrowHasStatements()) {
+                    // Statement style: (params) => { statements }
+                    arrowBody.append("{");
+                    for (ASTNode stmt : functionBody.getArrowStatements()) {
+                        if (stmt != null) {
+                            arrowBody.append("\n").append(generateExpressionForNested(stmt, false));
+                        } else {
+                            arrowBody.append("\n  // null statement");
+                        }
+                    }
+                    arrowBody.append("}");
+                } else if (functionBody.getArrowValue() != null) {
+                    // Expression style: (params) => expression
                     arrowBody.append(generateExpressionForNested(functionBody.getArrowValue(), false));
                 }
                 return arrowBody.toString();
@@ -1507,7 +1684,7 @@ public class CodeGenerator {
             
             for (ASTNode part : ((TemplateLiteralNode) node).getParts()) {
                 if (part instanceof StringNode) {
-                    // Transform interpolations in string content (e.g., {{ product.name }} -> ${product.name})
+                    // Transform interpolations in string content (e.g., {{ product.name }} -> ${this.product.name})
                     String content = ((StringNode) part).getValue();
                     nestedTemplate.append(transformInterpolations(content));
                 } else if (part instanceof IdentifierNode) {
@@ -1762,6 +1939,10 @@ public class CodeGenerator {
             } else if ("*ngIf".equals(attrName)) {
                 // Skip *ngIf attribute - it will be handled during element generation
                 continue;
+            } else if ("[click]".equals(attrName)) {
+                // Transform [click] to onclick for standard HTML
+                template.append(" onclick=\"").append(attrValue).append("\"");
+                continue;
             }
             
             // Handle special attributes
@@ -1792,6 +1973,10 @@ public class CodeGenerator {
                 continue;
             } else if ("*ngIf".equals(attrName)) {
                 // Skip *ngIf attribute - it will be handled during element generation
+                continue;
+            } else if ("[click]".equals(attrName)) {
+                // Transform [click] to onclick for standard HTML
+                template.append(" onclick=\"").append(attrValue).append("\"");
                 continue;
             }
 
@@ -1874,7 +2059,30 @@ public class CodeGenerator {
         
         arrowFunc.append(") => ");
         // The body of the arrow function is a nested context, so use generateExpressionForNested
-        arrowFunc.append(generateExpressionForNested(arrowNode.getBody()));
+        if (arrowNode.getBody() == null) {
+            // Handle empty arrow function
+            arrowFunc.append("undefined");
+        } else if (arrowNode.getBody() instanceof FunctionBodyNode) {
+            FunctionBodyNode functionBody = (FunctionBodyNode) arrowNode.getBody();
+                            if (functionBody.arrowHasStatements()) {
+                    // Statement style: (params) => { statements }
+                    arrowFunc.append("{");
+                    for (ASTNode stmt : functionBody.getArrowStatements()) {
+                        if (stmt != null) {
+                            arrowFunc.append("\n  ").append(generateExpressionForNested(stmt, false));
+                        } else {
+                            arrowFunc.append("\n  // null statement");
+                        }
+                    }
+                    arrowFunc.append("\n}");
+                } else if (functionBody.getArrowValue() != null) {
+                // Expression style: (params) => expression
+                arrowFunc.append(generateExpressionForNested(functionBody.getArrowValue(), false));
+            }
+        } else {
+            // Regular expression body
+            arrowFunc.append(generateExpressionForNested(arrowNode.getBody(), false));
+        }
         
         return arrowFunc.toString();
     }
@@ -2191,6 +2399,68 @@ public class CodeGenerator {
                         }
                     }
                     break;
+            }
+        }
+    }
+
+    /**
+     * Get default value for a node type during code generation
+     * This method handles various node types and provides appropriate default values
+     */
+    private String getDefaultValue(ASTNode node) {
+        if (node == null) {
+            return "undefined";
+        }
+        
+        if (node instanceof FunctionBodyNode) {
+            FunctionBodyNode functionBody = (FunctionBodyNode) node;
+            if (functionBody.isBlockStyle()) {
+                // For block-style function bodies, generate a function that returns undefined
+                StringBuilder blockBody = new StringBuilder();
+                blockBody.append("function() {");
+                for (ASTNode stmt : functionBody.getStatements()) {
+                    blockBody.append("\n  ").append(generateExpression(stmt));
+                }
+                blockBody.append("\n  return undefined;");
+                blockBody.append("\n}");
+                return blockBody.toString();
+            } else {
+                // For arrow functions, generate the arrow function
+                StringBuilder arrowBody = new StringBuilder();
+                arrowBody.append("(").append(String.join(", ", functionBody.getParams())).append(") => ");
+                if (functionBody.arrowHasStatements()) {
+                    // Statement style: (params) => { statements }
+                    arrowBody.append("{");
+                    for (ASTNode stmt : functionBody.getArrowStatements()) {
+                        arrowBody.append("\n  ").append(generateExpression(stmt));
+                    }
+                    arrowBody.append("\n  return undefined;");
+                    arrowBody.append("\n}");
+                } else if (functionBody.getArrowValue() != null) {
+                    // Expression style: (params) => expression
+                    arrowBody.append(generateExpression(functionBody.getArrowValue()));
+                } else {
+                    // Fallback for empty arrow functions
+                    arrowBody.append("undefined");
+                }
+                return arrowBody.toString();
+            }
+        } else if (node instanceof StringNode) {
+            return ((StringNode) node).getValue();
+        } else if (node instanceof NumberNode) {
+            return ((NumberNode) node).getValue();
+        } else if (node instanceof BooleanNode) {
+            return String.valueOf(((BooleanNode) node).getValue());
+        } else if (node instanceof IdentifierNode) {
+            return ((IdentifierNode) node).getName();
+        } else if (node instanceof ValueNode) {
+            return generateExpression((ValueNode) node);
+        } else {
+            // For other node types, try to generate expression or return a placeholder
+            try {
+                return generateExpression(node);
+            } catch (Exception e) {
+                return "/* Default value for " + node.getClass().getSimpleName() + " */";
             }
         }
     }

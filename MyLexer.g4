@@ -2,6 +2,7 @@ lexer grammar MyLexer;
 
 NG_FOR: '*ngFor';
 NG_IF: '*ngIf';
+CLICK_EVENT: '[click]';
 IMPORT: 'import';
 CLASS: 'class';
 CONST: 'const';

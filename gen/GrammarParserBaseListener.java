@@ -1025,6 +1025,18 @@ public class GrammarParserBaseListener implements GrammarParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterClickEventAttributeRule(GrammarParser.ClickEventAttributeRuleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitClickEventAttributeRule(GrammarParser.ClickEventAttributeRuleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterRegularAttribute(GrammarParser.RegularAttributeContext ctx) { }
 	/**
 	 * {@inheritDoc}

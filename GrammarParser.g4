@@ -58,7 +58,7 @@ functionDeclaration
 
 functionBody
     : type=typeDefine? LBRACE stmts+=statement* RBRACE         #functionBlock
-    | ((LPAREN (params+=ID (COMMA params+=ID)*)? RPAREN) | singleParam=ID) type=typeDefine? ARROW expr=value  #functionArrow
+    | ((LPAREN (params+=ID (COMMA params+=ID)*)? RPAREN) | singleParam=ID) type=typeDefine? ARROW (expr=value | stmts+=statement*)  #functionArrow
     ;
 
 functionCall
@@ -146,7 +146,9 @@ value
     | pv=primaryValue (qm=(QMARK|EMARK))? type=asType?       #primaryValueExpr
     | left=value DOT right=value                             #propertyAccessValue
     | left=value LPAREN args+=value (COMMA args+=value)* RPAREN #methodCallValue
-    | params+=ID (COMMA params+=ID)* ARROW body=value        #arrowFunctionValue
+    | LPAREN params+=ID (COMMA params+=ID)* RPAREN ARROW (LBRACE stmts+=statement* RBRACE | value)   #arrowFunctionValue
+    | param=ID ARROW (LBRACE stmts+=statement* RBRACE | value)                                      #arrowFunctionValue
+    | LPAREN RPAREN ARROW (LBRACE stmts+=statement* RBRACE | value)                                 #arrowFunctionValue
     ;
 
 primaryValue
@@ -243,12 +245,14 @@ attributes
 attribute
     : NG_FOR ASSIGN BACKTICK LET varName=ID OF collection=ID BACKTICK                #ngForAttributeRule
     | NG_IF ASSIGN BACKTICK condition=value BACKTICK                                 #ngIfAttributeRule
+    | CLICK_EVENT ASSIGN val=attributeValue                                          #clickEventAttributeRule
     | name=ID ASSIGN val=attributeValue                                               #regularAttribute
     ;
 
 attributeValue
     : STRING
     | interpolation
+    | value
     ;
 
 interpolation
