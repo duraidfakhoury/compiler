@@ -58,6 +58,8 @@ import { BinaryValueContext } from "./GrammarParser.js";
 import { NumberValueContext } from "./GrammarParser.js";
 import { StringValueContext } from "./GrammarParser.js";
 import { CallValueContext } from "./GrammarParser.js";
+import { TrueValueContext } from "./GrammarParser.js";
+import { FalseValueContext } from "./GrammarParser.js";
 import { IdValueContext } from "./GrammarParser.js";
 import { ParenValueContext } from "./GrammarParser.js";
 import { ObjectValueContext } from "./GrammarParser.js";
@@ -490,6 +492,20 @@ export default class GrammarParserVisitor<Result> extends ParseTreeVisitor<Resul
 	 * @return the visitor result
 	 */
 	visitCallValue?: (ctx: CallValueContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `trueValue`
+	 * labeled alternative in `GrammarParser.primaryValue`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitTrueValue?: (ctx: TrueValueContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `falseValue`
+	 * labeled alternative in `GrammarParser.primaryValue`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitFalseValue?: (ctx: FalseValueContext) => Result;
 	/**
 	 * Visit a parse tree produced by the `idValue`
 	 * labeled alternative in `GrammarParser.primaryValue`.

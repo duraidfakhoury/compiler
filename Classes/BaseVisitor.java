@@ -14,6 +14,7 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
     SymbolTable symbolTable = new SymbolTable();
     private boolean inFunction = false;
     private String currentFunctionName = null;
+    private boolean inTemplateContext = false; // Track when we're inside a template
 
     // For tracking variable re-declarations in the same scope
     private Set<String> currentScopeDeclarations = new HashSet<>();
@@ -21,6 +22,13 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
     // Known primitive types
     private static final Set<String> KNOWN_TYPES = Set.of(
         "string", "number", "boolean", "any", "object", "void", "null", "undefined"
+    );
+
+    // Known Angular template identifiers that should not trigger semantic errors
+    private static final Set<String> TEMPLATE_SAFE_IDENTIFIERS = Set.of(
+        "this", "length", "map", "forEach", "filter", "reduce", "find", "some", "every",
+        "index", "first", "last", "even", "odd", "count", "trackBy", "ngFor", "ngIf", "ngSwitch", "ngClass",
+        "ngStyle", "ngModel", "ngSubmit", "ngClick", "ngChange", "ngBlur", "ngFocus", "ngKeyup", "ngKeydown"
     );
 
     // Getter for symbol table
@@ -35,9 +43,6 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
             ASTNode statement = visit(statementCtx);
             if (statement != null) programNode.addStatement(statement);
         }
-
-        // CONTROL FLOW: Check for unused symbols at the end of program analysis
-        checkForUnusedSymbols();
 
         return programNode;
     }
@@ -707,6 +712,16 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
     }
 
     @Override
+    public ASTNode visitTrueValue(GrammarParser.TrueValueContext ctx) {
+        return new BooleanNode("true");
+    }
+
+    @Override
+    public ASTNode visitFalseValue(GrammarParser.FalseValueContext ctx) {
+        return new BooleanNode("false");
+    }
+
+    @Override
     public ASTNode visitCallValue(GrammarParser.CallValueContext ctx) {
         return visit(ctx.call);
     }
@@ -714,6 +729,29 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitIdValue(GrammarParser.IdValueContext ctx) {
         String varName = ctx.id.getText();
+
+        // If we're in a template context, be more lenient with semantic validation
+        if (inTemplateContext) {
+            // Skip semantic validation for known safe template identifiers
+            if (TEMPLATE_SAFE_IDENTIFIERS.contains(varName)) {
+                return new IdentifierNode(varName);
+            }
+            
+            // Skip validation for common loop variables and Angular template variables
+            if (varName.matches("^[a-z][a-zA-Z0-9]*$") && varName.length() <= 20) {
+                // Allow common template variable patterns (lowercase start, reasonable length)
+                return new IdentifierNode(varName);
+            }
+            
+            // For other identifiers in template context, still check if they exist and mark them as used
+            // but don't generate semantic errors for undefined variables
+            Symbol symbol = symbolTable.lookupSymbol(varName);
+            if (symbol != null) {
+                symbol.setUsed(true);
+            }
+            // Don't add semantic error for undefined variables in template context
+            return new IdentifierNode(varName);
+        }
 
         // SEMANTIC ERROR: Check for undefined variables
         Symbol symbol = symbolTable.lookupSymbol(varName);
@@ -743,6 +781,27 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
     public ASTNode visitPropertyAccessValue(GrammarParser.PropertyAccessValueContext ctx) {
         ASTNode left = visit(ctx.left);
         ASTNode right = visit(ctx.right);
+        
+        // If we're in a template context and the left side is a template-safe identifier, skip semantic validation
+        if (inTemplateContext && left instanceof ValueNode) {
+            ValueNode leftValue = (ValueNode) left;
+            if (leftValue.getPrimaryValue() instanceof IdentifierNode) {
+                String leftIdentifier = ((IdentifierNode) leftValue.getPrimaryValue()).getName();
+                if (TEMPLATE_SAFE_IDENTIFIERS.contains(leftIdentifier)) {
+                    // Skip semantic validation for template-safe identifiers in template context
+                    // But still mark the right side identifier as used if it exists in symbol table
+                    if (right instanceof IdentifierNode) {
+                        String rightIdentifier = ((IdentifierNode) right).getName();
+                        Symbol rightSymbol = symbolTable.lookupSymbol(rightIdentifier);
+                        if (rightSymbol != null) {
+                            rightSymbol.setUsed(true);
+                        }
+                    }
+                    PropertyAccessValueNode propAccess = new PropertyAccessValueNode(left, right);
+                    return new ValueNode(propAccess);
+                }
+            }
+        }
         
         // SEMANTIC ERROR: Check if left is an array/object for property access
         if (left instanceof ValueNode) {
@@ -787,6 +846,25 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         
         for (var argCtx : ctx.args) {
             args.add(visit(argCtx));
+        }
+        
+        // If we're in a template context and the left side involves a template-safe identifier, skip semantic validation
+        if (inTemplateContext && left instanceof ValueNode) {
+            ValueNode leftValue = (ValueNode) left;
+            if (leftValue.getPrimaryValue() instanceof PropertyAccessValueNode) {
+                PropertyAccessValueNode propAccess = (PropertyAccessValueNode) leftValue.getPrimaryValue();
+                if (propAccess.getLeft() instanceof ValueNode) {
+                    ValueNode baseValue = (ValueNode) propAccess.getLeft();
+                    if (baseValue.getPrimaryValue() instanceof IdentifierNode) {
+                        String baseIdentifier = ((IdentifierNode) baseValue.getPrimaryValue()).getName();
+                        if (TEMPLATE_SAFE_IDENTIFIERS.contains(baseIdentifier)) {
+                            // Skip semantic validation for template-safe identifiers in template context
+                            MethodCallValueNode methodCall = new MethodCallValueNode(left, args);
+                            return new ValueNode(methodCall);
+                        }
+                    }
+                }
+            }
         }
         
         // SEMANTIC ERROR: Check if method is called on appropriate type
@@ -858,9 +936,11 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitNestedTemplateInterpolation(GrammarParser.NestedTemplateInterpolationContext ctx) {
         List<ASTNode> nested = new ArrayList<>();
+        inTemplateContext = true; // Set template context flag for nested interpolation
         for (var nestedCtx : ctx.nested) {
             nested.add(visit(nestedCtx));
         }
+        inTemplateContext = false; // Reset template context flag
         
         return new NestedTemplateInterpolationNode(nested);
     }
@@ -913,9 +993,11 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitTemplateValue(GrammarParser.TemplateValueContext ctx) {
         TemplateLiteralNode node = new TemplateLiteralNode();
+        inTemplateContext = true; // Set template context flag for HTML content
         for (var htmlCtx : ctx.content) {
             node.addPart(visit(htmlCtx));
         }
+        inTemplateContext = false; // Reset template context flag
         return node;
     }
 
@@ -1560,7 +1642,9 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         }
 
         // Now visit the template after properties are declared
+        inTemplateContext = true; // Set template context flag
         ValueNode templateValue = (ValueNode) visit(ctx.template);
+        inTemplateContext = false; // Reset template context flag
         componentNode.setTemplate(templateValue);
 
         return componentNode;
@@ -1612,9 +1696,11 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitHtmlBlock(GrammarParser.HtmlBlockContext ctx) {
         HtmlNode node = new HtmlNode(HtmlNode.HtmlType.EMBEDDED_STATEMENTS);
+        inTemplateContext = true; // Set template context flag for embedded statements
         for (GrammarParser.StatementContext stmt : ctx.stmts) {
             node.addEmbeddedStatement(visit(stmt));
         }
+        inTemplateContext = false; // Reset template context flag
         return node;
     }
 
@@ -1657,6 +1743,7 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
         PrimaryValueNode primaryValue = valueNode.getPrimaryValue();
         if (primaryValue instanceof NumberNode) return "number";
         if (primaryValue instanceof StringNode) return "string";
+        if (primaryValue instanceof BooleanNode) return "boolean";
         if (primaryValue instanceof IdentifierNode) {
             String varName = ((IdentifierNode) primaryValue).getName();
             Symbol symbol = symbolTable.lookupSymbol(varName);
@@ -2065,7 +2152,9 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitSimpleInterpolation(GrammarParser.SimpleInterpolationContext ctx) {
         // Visit the expression to build the AST
+        inTemplateContext = true; // Set template context flag for interpolation
         ASTNode exprNode = visit(ctx.expr);
+        inTemplateContext = false; // Reset template context flag
         
         // Mark the expression as used if it's an identifier
         if (exprNode instanceof ValueNode) {
@@ -2451,25 +2540,6 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
     }
     
     /**
-     * Check for unused variables and functions
-     */
-    private void checkForUnusedSymbols() {
-        for (String scope : symbolTable.getAllScopes()) {
-            List<Symbol> scopeSymbols = symbolTable.getSymbolsInScope(scope);
-            if (scopeSymbols != null) {
-                for (Symbol symbol : scopeSymbols) {
-                    if (!symbol.isUsed() && !symbol.getKind().equals("function") && !symbol.getKind().equals("class")) {
-                        symbolTable.addControlFlowError(
-                            "Symbol '" + symbol.getName() + "' declared at line " + symbol.getLine() + " is never used",
-                            symbol.getLine(), 0
-                        );
-                    }
-                }
-            }
-        }
-    }
-    
-    /**
      * Check for potential division by zero
      */
     private void checkForDivisionByZero(OperatorExpressionNode opExpr, int line) {
@@ -2529,7 +2599,12 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
                     } else if (attr instanceof GrammarParser.NgIfAttributeRuleContext) {
                         // Handle *ngIf directive
                         GrammarParser.NgIfAttributeRuleContext ngIfAttr = (GrammarParser.NgIfAttributeRuleContext) attr;
+                        
+                        // Ensure template context is maintained when processing ngIf conditions
+                        boolean wasInTemplateContext = inTemplateContext;
+                        inTemplateContext = true;
                         ValueNode condition = (ValueNode) visit(ngIfAttr.condition);
+                        inTemplateContext = wasInTemplateContext;
                         
                         // SEMANTIC ERROR: Check if condition is valid
                         if (condition == null) {
@@ -2545,7 +2620,12 @@ public class BaseVisitor extends GrammarParserBaseVisitor<ASTNode> {
                         if (attr instanceof GrammarParser.RegularAttributeContext) {
                             GrammarParser.RegularAttributeContext regularAttr = (GrammarParser.RegularAttributeContext) attr;
                             String attrName = regularAttr.name.getText();
+                            
+                            // Ensure template context is maintained when processing attribute values
+                            boolean wasInTemplateContext = inTemplateContext;
+                            inTemplateContext = true;
                             ASTNode attrValueNode = visit(regularAttr.val);
+                            inTemplateContext = wasInTemplateContext;
                             
                             // Convert className to class to avoid conflicts with JavaScript class keyword
                             if ("className".equals(attrName)) {

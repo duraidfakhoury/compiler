@@ -24,6 +24,8 @@ TEMPLATE: 'template';
 AS: 'as';
 TYPE: 'type';
 OF: 'of';
+TRUE: 'true';
+FALSE: 'false';
 
 fragment ESC
     : '\\'[nt"]

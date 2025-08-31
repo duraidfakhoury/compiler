@@ -153,6 +153,8 @@ primaryValue
     : num=NUMBER                                             #numberValue
     | str=STRING                                             #stringValue
     | call=functionCall                                      #callValue
+    | TRUE                                                   #trueValue
+    | FALSE                                                  #falseValue
     | id=ID                                                  #idValue
     | LPAREN inner=value RPAREN                              #parenValue
     | obj=object                                             #objectValue

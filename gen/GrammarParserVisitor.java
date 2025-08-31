@@ -396,6 +396,20 @@ public interface GrammarParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCallValue(GrammarParser.CallValueContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code trueValue}
+	 * labeled alternative in {@link GrammarParser#primaryValue}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTrueValue(GrammarParser.TrueValueContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code falseValue}
+	 * labeled alternative in {@link GrammarParser#primaryValue}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFalseValue(GrammarParser.FalseValueContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code idValue}
 	 * labeled alternative in {@link GrammarParser#primaryValue}.
 	 * @param ctx the parse tree

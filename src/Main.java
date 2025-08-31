@@ -91,8 +91,6 @@ public class Main {
                 System.out.println("\n✗ Compilation failed due to semantic errors.");
                 visitor.getSymbolTable().printErrors();
 
-                generateCode(ast, rootStyles);
-
             }
 
         } catch (Exception e) {

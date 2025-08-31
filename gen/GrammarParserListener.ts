@@ -58,6 +58,8 @@ import { BinaryValueContext } from "./GrammarParser.js";
 import { NumberValueContext } from "./GrammarParser.js";
 import { StringValueContext } from "./GrammarParser.js";
 import { CallValueContext } from "./GrammarParser.js";
+import { TrueValueContext } from "./GrammarParser.js";
+import { FalseValueContext } from "./GrammarParser.js";
 import { IdValueContext } from "./GrammarParser.js";
 import { ParenValueContext } from "./GrammarParser.js";
 import { ObjectValueContext } from "./GrammarParser.js";
@@ -762,6 +764,30 @@ export default class GrammarParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitCallValue?: (ctx: CallValueContext) => void;
+	/**
+	 * Enter a parse tree produced by the `trueValue`
+	 * labeled alternative in `GrammarParser.primaryValue`.
+	 * @param ctx the parse tree
+	 */
+	enterTrueValue?: (ctx: TrueValueContext) => void;
+	/**
+	 * Exit a parse tree produced by the `trueValue`
+	 * labeled alternative in `GrammarParser.primaryValue`.
+	 * @param ctx the parse tree
+	 */
+	exitTrueValue?: (ctx: TrueValueContext) => void;
+	/**
+	 * Enter a parse tree produced by the `falseValue`
+	 * labeled alternative in `GrammarParser.primaryValue`.
+	 * @param ctx the parse tree
+	 */
+	enterFalseValue?: (ctx: FalseValueContext) => void;
+	/**
+	 * Exit a parse tree produced by the `falseValue`
+	 * labeled alternative in `GrammarParser.primaryValue`.
+	 * @param ctx the parse tree
+	 */
+	exitFalseValue?: (ctx: FalseValueContext) => void;
 	/**
 	 * Enter a parse tree produced by the `idValue`
 	 * labeled alternative in `GrammarParser.primaryValue`.

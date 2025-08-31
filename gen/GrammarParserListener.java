@@ -668,6 +668,30 @@ public interface GrammarParserListener extends ParseTreeListener {
 	 */
 	void exitCallValue(GrammarParser.CallValueContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code trueValue}
+	 * labeled alternative in {@link GrammarParser#primaryValue}.
+	 * @param ctx the parse tree
+	 */
+	void enterTrueValue(GrammarParser.TrueValueContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code trueValue}
+	 * labeled alternative in {@link GrammarParser#primaryValue}.
+	 * @param ctx the parse tree
+	 */
+	void exitTrueValue(GrammarParser.TrueValueContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code falseValue}
+	 * labeled alternative in {@link GrammarParser#primaryValue}.
+	 * @param ctx the parse tree
+	 */
+	void enterFalseValue(GrammarParser.FalseValueContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code falseValue}
+	 * labeled alternative in {@link GrammarParser#primaryValue}.
+	 * @param ctx the parse tree
+	 */
+	void exitFalseValue(GrammarParser.FalseValueContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code idValue}
 	 * labeled alternative in {@link GrammarParser#primaryValue}.
 	 * @param ctx the parse tree
